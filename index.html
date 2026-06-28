@@ -637,12 +637,12 @@ const UNIVERSITIES = [
   {
     id: 'xmu', name: '厦门大学', tier: '985', city: '厦门',
     groups: [
-      { name: '计算机类（计算机科学与技术）', preferred: '物理', additional: [], offset: 108 },
-      { name: '电子信息类（电子信息工程）', preferred: '物理', additional: [], offset: 106 },
+      { name: '计算机类（计算机科学与技术）', preferred: '物理', additional: [], offset: 120 },
+      { name: '电子信息类（电子信息工程）', preferred: '物理', additional: [], offset: 117 },
       { name: '经济管理类（经济学、会计学、工商管理）', preferred: '不限', additional: [], offset: 110 },
-      { name: '法学', preferred: '不限', additional: ["政治"], offset: 105 },
+      { name: '法学', preferred: '不限', additional: ["政治"], offset: 107 },
       { name: '海洋科学类', preferred: '物理', additional: [], offset: 100 },
-      { name: '外语类（英语、日语）', preferred: '不限', additional: [], offset: 102 }
+      { name: '外语类（英语、日语）', preferred: '不限', additional: [], offset: 97 }
     ]
   },
   {
@@ -956,10 +956,10 @@ const UNIVERSITIES = [
   {
     id: 'fzu', name: '福州大学', tier: '211', city: '福州',
     groups: [
-      { name: '计算机类（计算机科学与技术）', preferred: '物理', additional: [], offset: 75 },
-      { name: '电子信息类（电子信息工程）', preferred: '物理', additional: [], offset: 73 },
-      { name: '化工类（化学工程与工艺）', preferred: '物理', additional: ["化学"], offset: 70 },
-      { name: '经济管理类（工商管理）', preferred: '不限', additional: [], offset: 68 }
+      { name: '计算机类（计算机科学与技术）', preferred: '物理', additional: [], offset: 80 },
+      { name: '电子信息类（电子信息工程）', preferred: '物理', additional: [], offset: 76 },
+      { name: '化工类（化学工程与工艺）', preferred: '物理', additional: ["化学"], offset: 74 },
+      { name: '经济管理类（工商管理）', preferred: '不限', additional: [], offset: 74 }
     ]
   },
   {
@@ -1540,6 +1540,109 @@ const UNIVERSITIES = [
       { name: '设计类（视觉传达设计）', preferred: '不限', additional: [], offset: -95 }
     ]
   },
+  {
+    id: 'fjsd', name: '福建师范大学', tier: '普通', city: '福州',
+    groups: [
+      { name: '计算机类（计算机科学与技术）', preferred: '物理', additional: ["化学"], offset: 56 },
+      { name: '地理科学类（地理信息科学）', preferred: '不限', additional: ["地理"], offset: 51 },
+      { name: '教育类（教育学、心理学）', preferred: '不限', additional: [], offset: 47 },
+      { name: '中国语言文学类', preferred: '历史', additional: [], offset: 42 },
+      { name: '经济管理类（经济学、工商管理）', preferred: '不限', additional: [], offset: 44 }
+    ]
+  },
+  {
+    id: 'hqu', name: '华侨大学', tier: '普通', city: '厦门',
+    groups: [
+      { name: '计算机类（计算机科学与技术、软件工程）', preferred: '物理', additional: ["化学"], offset: 52 },
+      { name: '电子信息类（通信工程、电子科学）', preferred: '物理', additional: ["化学"], offset: 48 },
+      { name: '建筑类（建筑学、城乡规划）', preferred: '物理', additional: [], offset: 42 },
+      { name: '经济管理类（工商管理、旅游管理）', preferred: '不限', additional: [], offset: 32 },
+      { name: '中国语言文学类', preferred: '历史', additional: [], offset: 28 }
+    ]
+  },
+  {
+    id: 'jmu', name: '集美大学', tier: '普通', city: '厦门',
+    groups: [
+      { name: '航海类（航海技术、轮机工程）', preferred: '物理', additional: ["化学"], offset: 37 },
+      { name: '计算机类（计算机科学与技术）', preferred: '物理', additional: ["化学"], offset: 29 },
+      { name: '经济管理类（工商管理、会计学）', preferred: '不限', additional: [], offset: 28 },
+      { name: '教育类（小学教育）', preferred: '不限', additional: [], offset: 26 }
+    ]
+  },
+  {
+    id: 'fafu', name: '福建农林大学', tier: '普通', city: '福州',
+    groups: [
+      { name: '农林类（农学、植物保护、林学）', preferred: '物理', additional: ["化学","生物"], offset: 30 },
+      { name: '食品科学与工程', preferred: '物理', additional: ["化学"], offset: 28 },
+      { name: '计算机类（计算机科学与技术）', preferred: '物理', additional: ["化学"], offset: 22 },
+      { name: '经济管理类（工商管理）', preferred: '不限', additional: [], offset: 18 }
+    ]
+  },
+  {
+    id: 'fjut', name: '福建理工大学', tier: '普通', city: '福州',
+    groups: [
+      { name: '土木工程类（土木工程、建筑学）', preferred: '物理', additional: [], offset: 26 },
+      { name: '机械类（机械设计制造及其自动化）', preferred: '物理', additional: ["化学"], offset: 20 },
+      { name: '计算机类（计算机科学与技术）', preferred: '物理', additional: ["化学"], offset: 18 },
+      { name: '经济管理类（工程造价、工商管理）', preferred: '不限', additional: [], offset: 16 }
+    ]
+  },
+  {
+    id: 'fjmu', name: '福建医科大学', tier: '普通', city: '福州',
+    groups: [
+      { name: '临床医学（5+3一体化）', preferred: '物理', additional: ["化学","生物"], offset: 97 },
+      { name: '临床医学', preferred: '物理', additional: ["化学","生物"], offset: 72 },
+      { name: '口腔医学', preferred: '物理', additional: ["化学","生物"], offset: 68 },
+      { name: '护理学', preferred: '不限', additional: [], offset: 14 },
+      { name: '医学技术类（医学检验、医学影像）', preferred: '物理', additional: ["化学"], offset: 35 }
+    ]
+  },
+  {
+    id: 'xmut', name: '厦门理工学院', tier: '普通', city: '厦门',
+    groups: [
+      { name: '计算机类（计算机科学与技术）', preferred: '物理', additional: ["化学"], offset: 20 },
+      { name: '电子信息类（通信工程）', preferred: '物理', additional: ["化学"], offset: 16 },
+      { name: '机械类（机械设计制造及其自动化）', preferred: '物理', additional: [], offset: 14 },
+      { name: '经济管理类（工商管理）', preferred: '不限', additional: [], offset: 13 }
+    ]
+  },
+  {
+    id: 'mju', name: '闽江学院', tier: '普通', city: '福州',
+    groups: [
+      { name: '计算机类（计算机科学与技术）', preferred: '物理', additional: ["化学"], offset: 13 },
+      { name: '电子信息类（电子信息工程）', preferred: '物理', additional: ["化学"], offset: 10 },
+      { name: '经济管理类（工商管理、电子商务）', preferred: '不限', additional: [], offset: 8 },
+      { name: '外语类（英语）', preferred: '不限', additional: [], offset: 5 }
+    ]
+  },
+  {
+    id: 'fjtcm', name: '福建中医药大学', tier: '普通', city: '福州',
+    groups: [
+      { name: '中医学（5+3一体化）', preferred: '物理', additional: ["化学","生物"], offset: 25 },
+      { name: '中医学', preferred: '物理', additional: ["化学","生物"], offset: 5 },
+      { name: '中西医临床医学', preferred: '物理', additional: ["化学","生物"], offset: 3 },
+      { name: '药学', preferred: '物理', additional: ["化学"], offset: 0 },
+      { name: '护理学', preferred: '不限', additional: [], offset: -3 }
+    ]
+  },
+  {
+    id: 'mnnu', name: '闽南师范大学', tier: '普通', city: '漳州',
+    groups: [
+      { name: '计算机类（计算机科学与技术）', preferred: '物理', additional: ["化学"], offset: 3 },
+      { name: '数学类（数学与应用数学）', preferred: '物理', additional: [], offset: 1 },
+      { name: '教育类（小学教育、学前教育）', preferred: '不限', additional: [], offset: -2 },
+      { name: '中国语言文学类（汉语言文学）', preferred: '历史', additional: [], offset: -5 }
+    ]
+  },
+  {
+    id: 'qztc', name: '泉州师范学院', tier: '普通', city: '泉州',
+    groups: [
+      { name: '计算机类（计算机科学与技术）', preferred: '物理', additional: ["化学"], offset: 0 },
+      { name: '教育类（小学教育、特殊教育）', preferred: '不限', additional: [], offset: -3 },
+      { name: '中国语言文学类', preferred: '历史', additional: [], offset: -5 },
+      { name: '经济管理类（工商管理）', preferred: '不限', additional: [], offset: -8 }
+    ]
+  },
 ];
 
 // ==================== 高校详情数据 ====================
@@ -1656,6 +1759,17 @@ const UNI_DETAILS = {
   'cdtc':{r:270,t:'专科',n:'公办',f:'3700-4800',a:'成都市郫都区犀浦镇泰山南街186号',d:'公办专科，位于成都。纺织服装行业老牌院校。',e:{rt:90,sl:'0.4-0.8万',em:['纺织服装企业','检测机构','电商企业','自主创业']}},
   'cdvtc':{r:260,t:'专科',n:'公办',f:'3700-4800',a:'成都市高新区益州大道北段天益街83号',d:'公办专科，国家骨干高职院校。位于成都，以软件和旅游为特色。',e:{rt:91,sl:'0.5-0.8万',em:['成都IT企业','旅游酒店','医疗机构','电商企业']}},
   'sptc':{r:265,t:'专科',n:'公办',f:'3700-4800',a:'成都市锦江区静康路536号',d:'公办专科，位于成都。通信和邮政行业特色院校。',e:{rt:92,sl:'0.5-0.9万',em:['三大运营商','中国邮政','通信设备企业','IT企业']}},
+  'fjsd':{r:87,t:'师范',n:'公办',f:'4200-5460',a:'福州市闽侯县大学城',d:'福建省属重点师范院校，教育学和地理学有特色。',e:{rt:90,sl:'0.6-1.1万',em:['福建各地中小学','教育培训机构','福州IT企业','地方公务员']}},
+  'hqu':{r:105,t:'综合',n:'公办',f:'4200-5500',a:'厦门市集美区集美大道668号',d:'中央统战部直属，位于厦门。建筑和旅游管理有特色。',e:{rt:91,sl:'0.7-1.2万',em:['厦门旅游企业','建筑设计院','厦门IT企业','地方公务员']}},
+  'jmu':{r:125,t:'综合',n:'公办',f:'4200-5460',a:'厦门市集美区银江路185号',d:'福建省属重点，航海教育全国闻名，地处厦门。',e:{rt:90.5,sl:'0.6-1.1万',em:['航运企业','厦门IT企业','地方中小学','地方公务员']}},
+  'fafu':{r:100,t:'农林',n:'公办',f:'4200-5460',a:'福州市仓山区上下店路15号',d:'福建省属重点农林院校，农林和食品科学有特色。',e:{rt:88,sl:'0.5-1.0万',em:['农业企业','食品企业','地方公务员','园林设计公司']}},
+  'fjut':{r:150,t:'理工',n:'公办',f:'4200-5460',a:'福州市闽侯县大学城',d:'福建省属工科院校，土木建筑和机械有特色。',e:{rt:88.5,sl:'0.6-1.0万',em:['建筑企业','福州制造企业','IT企业','地方公务员']}},
+  'fjmu':{r:115,t:'医学',n:'公办',f:'5000-7000',a:'福州市闽侯县大学城',d:'福建省属重点医学院校，临床医学省内领先。',e:{rt:93,sl:'0.8-1.5万',em:['福建省立医院','协和医院','各地三甲医院','医药企业']}},
+  'xmut':{r:155,t:'理工',n:'公办',f:'4200-5460',a:'厦门市集美区理工路600号',d:'福建省属工科院校，位于厦门，计算机和机械有特色。',e:{rt:89,sl:'0.6-1.1万',em:['厦门IT企业','制造企业','建筑企业','地方公务员']}},
+  'mju':{r:165,t:'综合',n:'公办',f:'4200-5460',a:'福州市闽侯县大学城',d:'福建省属综合性院校，以工科和应用型专业为主。',e:{rt:86,sl:'0.5-1.0万',em:['福州IT企业','教育培训','地方企业','地方公务员']}},
+  'fjtcm':{r:130,t:'医学',n:'公办',f:'5000-7000',a:'福州市闽侯县大学城',d:'福建省属中医药院校，中医和中西医结合有特色。',e:{rt:90,sl:'0.6-1.1万',em:['各地中医院','中西医结合医院','医药企业','康复机构']}},
+  'mnnu':{r:170,t:'师范',n:'公办',f:'4200-5460',a:'漳州市芗城区县前直街36号',d:'福建省属师范院校，服务闽南地区基础教育。',e:{rt:84,sl:'0.5-0.9万',em:['闽南各地中小学','教育培训机构','地方企业','地方公务员']}},
+  'qztc':{r:175,t:'师范',n:'公办',f:'4200-5460',a:'泉州市丰泽区东海大街398号',d:'福建省属师范院校，服务闽南地区教育。',e:{rt:83,sl:'0.5-0.9万',em:['泉州各地中小学','教育培训机构','地方企业','地方公务员']}},
 };
 
 // ==================== 城市→地域+省份映射 ====================
