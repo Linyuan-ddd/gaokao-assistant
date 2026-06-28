@@ -1716,6 +1716,19 @@ const UNI_DETAILS = {
   'sptc':{r:265,t:'专科',n:'公办',f:'3700-4800',a:'成都市锦江区静康路536号',d:'公办专科，位于成都。通信和邮政行业特色院校。',e:{rt:92,sl:'0.5-0.9万',em:['三大运营商','中国邮政','通信设备企业','IT企业']}},
 };
 
+// ==================== 城市→地域映射 ====================
+const CITY_REGION = {
+  '北京':'华北','天津':'华北','石家庄':'华北','太原':'华北',
+  '沈阳':'东北','大连':'东北','长春':'东北','哈尔滨':'东北',
+  '上海':'华东','南京':'华东','苏州':'华东','杭州':'华东','合肥':'华东','福州':'华东','厦门':'华东','南昌':'华东','济南':'华东','青岛':'华东','烟台':'华东',
+  '郑州':'华中','武汉':'华中','长沙':'华中','衡阳':'华中','黄石':'华中','新乡':'华中',
+  '广州':'华南','深圳':'华南','南宁':'华南','桂林':'华南',
+  '重庆':'西南','成都':'西南','自贡':'西南','绵阳':'西南','内江':'西南','乐山':'西南','宜宾':'西南','达州':'西南','攀枝花':'西南','西昌':'西南','康定':'西南','汶川':'西南','德阳':'西南','贵阳':'西南','昆明':'西南','安宁':'西南','简阳':'西南','都江堰':'西南','淮南':'华东',
+  '西安':'西北','兰州':'西北',
+};
+const REGIONS = ['华北','东北','华东','华中','华南','西南','西北'];
+function getRegion(city) { return CITY_REGION[city] || '其他'; }
+
 // ==================== 全局状态 ====================
 let state = {
   province: null,
@@ -1724,6 +1737,7 @@ let state = {
   additionalSubjects: [],   // ['化学', '生物', ...] (3+1+2)  or all 3 subjects (3+3)
   allResults: [],           // 全部匹配结果
   filter: 'all',            // 'all' | 'chong' | 'wen' | 'bao'
+  regionFilter: 'all',      // 'all' | '华北' | '东北' | '华东' | '华中' | '华南' | '西南' | '西北'
   sort: 'score_desc',       // 'score_desc' | 'score_asc' | 'name'
   searchQuery: '',
 };
@@ -2005,6 +2019,7 @@ function performSearch() {
         diff: diff,
         tekong: tekong,
         benke: benke,
+        region: getRegion(uni.city),
       });
     });
   }
@@ -2057,7 +2072,11 @@ function renderResults() {
       <span class="stat-badge bao ${state.filter === 'bao' ? 'active' : ''}" data-filter="bao">🟢 保底 ${baoCount}</span>
       <input type="text" class="search-input" id="searchInput" placeholder="🔍 搜索学校或专业..." value="${escapeHtml(state.searchQuery)}">
     </div>
-    <div>
+    <div style="display:flex;gap:8px;">
+      <select class="sort-select" id="regionSelect">
+        <option value="all" ${state.regionFilter === 'all' ? 'selected' : ''}>🗺️ 全部地域</option>
+        ${REGIONS.map(r => '<option value="' + r + '" ' + (state.regionFilter === r ? 'selected' : '') + '>' + r + '</option>').join('')}
+      </select>
       <select class="sort-select" id="sortSelect">
         <option value="score_desc" ${state.sort === 'score_desc' ? 'selected' : ''}>📊 参考分 ↓</option>
         <option value="score_asc" ${state.sort === 'score_asc' ? 'selected' : ''}>📊 参考分 ↑</option>
@@ -2082,6 +2101,10 @@ function renderResults() {
     state.sort = e.target.value;
     renderResults();
   });
+  document.getElementById('regionSelect').addEventListener('change', (e) => {
+    state.regionFilter = e.target.value;
+    renderResults();
+  });
 
   // 渲染卡片
   if (filtered.length === 0) {
@@ -2102,6 +2125,11 @@ function getFilteredResults() {
   // 按冲稳保筛选
   if (state.filter !== 'all') {
     results = results.filter(r => r.category === state.filter);
+  }
+
+  // 按地域筛选
+  if (state.regionFilter !== 'all') {
+    results = results.filter(r => r.region === state.regionFilter);
   }
 
   // 按搜索词筛选
@@ -2347,6 +2375,7 @@ function resetAll() {
     additionalSubjects: [],
     allResults: [],
     filter: 'all',
+    regionFilter: 'all',
     sort: 'score_desc',
     searchQuery: '',
   };
