@@ -1807,6 +1807,7 @@ let state = {
   filter: 'all',            // 'all' | 'chong' | 'wen' | 'bao'
   regionFilter: 'all',      // 'all' | '华北' | '东北' | '华东' | '华中' | '华南' | '西南' | '西北'
   provinceFilter: 'all',    // 'all' | '四川' | '广东' ...
+  tierFilter: 'all',        // 'all' | '985' | '211' | '双一流' | '普本' | '专科'
   sort: 'rank_asc',         // 'rank_asc' | 'rank_desc' | 'name'
   searchQuery: '',
 };
@@ -2199,6 +2200,14 @@ function renderResults() {
         <option value="all" ${state.provinceFilter === 'all' ? 'selected' : ''}>📍 全部省份</option>
         ${PROVINCES_FILTER.map(r => '<option value="' + r + '" ' + (state.provinceFilter === r ? 'selected' : '') + '>' + r + '</option>').join('')}
       </select>
+      <select class="sort-select" id="tierSelect">
+        <option value="all" ${state.tierFilter === 'all' ? 'selected' : ''}>🎓 全部层次</option>
+        <option value="985" ${state.tierFilter === '985' ? 'selected' : ''}>985</option>
+        <option value="211" ${state.tierFilter === '211' ? 'selected' : ''}>211</option>
+        <option value="双一流" ${state.tierFilter === '双一流' ? 'selected' : ''}>双一流</option>
+        <option value="普本" ${state.tierFilter === '普本' ? 'selected' : ''}>普通本科</option>
+        <option value="专科" ${state.tierFilter === '专科' ? 'selected' : ''}>专科</option>
+      </select>
       <select class="sort-select" id="sortSelect">
         <option value="rank_asc" ${state.sort === 'rank_asc' ? 'selected' : ''}>🏅 排名 ↑（好学校在前）</option>
         <option value="rank_desc" ${state.sort === 'rank_desc' ? 'selected' : ''}>🏅 排名 ↓</option>
@@ -2228,6 +2237,10 @@ function renderResults() {
   });
   document.getElementById('provinceSelect2').addEventListener('change', (e) => {
     state.provinceFilter = e.target.value;
+    renderResults();
+  });
+  document.getElementById('tierSelect').addEventListener('change', (e) => {
+    state.tierFilter = e.target.value;
     renderResults();
   });
 
@@ -2260,6 +2273,17 @@ function getFilteredResults() {
   // 按省份筛选
   if (state.provinceFilter !== 'all') {
     results = results.filter(r => r.province === state.provinceFilter);
+  }
+
+  // 按层次筛选
+  if (state.tierFilter !== 'all') {
+    if (state.tierFilter === '普本') {
+      results = results.filter(r => r.university.tier === '普通');
+    } else if (state.tierFilter === '985') {
+      results = results.filter(r => r.university.tier === '985' || r.university.tier === 'c9');
+    } else {
+      results = results.filter(r => r.university.tier === state.tierFilter);
+    }
   }
 
   // 按搜索词筛选
@@ -2528,7 +2552,8 @@ function resetAll() {
     filter: 'all',
     regionFilter: 'all',
     provinceFilter: 'all',
-    sort: 'score_desc',
+    tierFilter: 'all',
+    sort: 'rank_asc',
     searchQuery: '',
   };
   document.getElementById('provinceSelect').value = '';
