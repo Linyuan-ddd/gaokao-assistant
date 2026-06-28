@@ -269,7 +269,12 @@ body {
       </div>
       <div class="input-group">
         <label>📝 高考总分</label>
-        <input type="number" id="scoreInput" placeholder="输入你的分数" min="0" max="750" step="1">
+        <input type="number" id="scoreInput" placeholder="输入分数" min="0" max="750" step="1">
+      </div>
+      <div class="input-group">
+        <label>🏅 全省排名（位次）</label>
+        <input type="number" id="rankInput" placeholder="输入排名，自动换算分数" min="1" max="999999" step="1">
+        <small style="color:#6b7280;font-size:11px;" id="rankHint"></small>
       </div>
       <div class="input-group" id="preferredSubjectGroup" style="display:none;">
         <label>🎯 首选科目</label>
@@ -337,145 +342,87 @@ body {
 const PROVINCES = {
   '广东': {
     name: '广东', type: '3+1+2',
-    tiers: {
-      physics: { benke: 442, tekong: 538 },
-      history: { benke: 428, tekong: 539 }
-    }
+    tiers: {physics:{benke:442,tekong:538,tekongRank:85000,benkeRank:220000},history:{benke:428,tekong:539,tekongRank:25000,benkeRank:90000}}
   },
   '江苏': {
     name: '江苏', type: '3+1+2',
-    tiers: {
-      physics: { benke: 462, tekong: 516 },
-      history: { benke: 478, tekong: 530 }
-    }
+    tiers: {physics:{benke:462,tekong:516,tekongRank:110000,benkeRank:180000},history:{benke:478,tekong:530,tekongRank:27000,benkeRank:52000}}
   },
   '湖北': {
     name: '湖北', type: '3+1+2',
-    tiers: {
-      physics: { benke: 437, tekong: 525 },
-      history: { benke: 432, tekong: 530 }
-    }
+    tiers: {physics:{benke:437,tekong:525,tekongRank:65000,benkeRank:150000},history:{benke:432,tekong:530,tekongRank:20000,benkeRank:50000}}
   },
   '湖南': {
     name: '湖南', type: '3+1+2',
-    tiers: {
-      physics: { benke: 422, tekong: 481 },
-      history: { benke: 438, tekong: 496 }
-    }
+    tiers: {physics:{benke:422,tekong:481,tekongRank:100000,benkeRank:190000},history:{benke:438,tekong:496,tekongRank:28000,benkeRank:55000}}
   },
   '河北': {
     name: '河北', type: '3+1+2',
-    tiers: {
-      physics: { benke: 448, tekong: 524 },
-      history: { benke: 449, tekong: 523 }
-    }
+    tiers: {physics:{benke:448,tekong:524,tekongRank:85000,benkeRank:200000},history:{benke:449,tekong:523,tekongRank:25000,benkeRank:65000}}
   },
   '辽宁': {
     name: '辽宁', type: '3+1+2',
-    tiers: {
-      physics: { benke: 368, tekong: 510 },
-      history: { benke: 400, tekong: 510 }
-    }
+    tiers: {physics:{benke:368,tekong:510,tekongRank:48000,benkeRank:95000},history:{benke:400,tekong:510,tekongRank:15000,benkeRank:28000}}
   },
   '福建': {
     name: '福建', type: '3+1+2',
-    tiers: {
-      physics: { benke: 449, tekong: 538 },
-      history: { benke: 431, tekong: 519 }
-    }
+    tiers: {physics:{benke:449,tekong:538,tekongRank:35000,benkeRank:95000},history:{benke:431,tekong:519,tekongRank:10000,benkeRank:28000}}
   },
   '重庆': {
     name: '重庆', type: '3+1+2',
-    tiers: {
-      physics: { benke: 427, tekong: 499 },
-      history: { benke: 428, tekong: 506 }
-    }
+    tiers: {physics:{benke:427,tekong:499,tekongRank:55000,benkeRank:100000},history:{benke:428,tekong:506,tekongRank:18000,benkeRank:35000}}
   },
   '安徽': {
     name: '安徽', type: '3+1+2',
-    tiers: {
-      physics: { benke: 465, tekong: 514 },
-      history: { benke: 462, tekong: 512 }
-    }
+    tiers: {physics:{benke:465,tekong:514,tekongRank:100000,benkeRank:200000},history:{benke:462,tekong:512,tekongRank:30000,benkeRank:60000}}
   },
   '江西': {
     name: '江西', type: '3+1+2',
-    tiers: {
-      physics: { benke: 448, tekong: 520 },
-      history: { benke: 463, tekong: 528 }
-    }
+    tiers: {physics:{benke:448,tekong:520,tekongRank:75000,benkeRank:160000},history:{benke:463,tekong:528,tekongRank:22000,benkeRank:50000}}
   },
   '河南': {
     name: '河南', type: '3+1+2',
-    tiers: {
-      physics: { benke: 396, tekong: 511 },
-      history: { benke: 428, tekong: 521 }
-    }
+    tiers: {physics:{benke:396,tekong:511,tekongRank:120000,benkeRank:280000},history:{benke:428,tekong:521,tekongRank:35000,benkeRank:80000}}
   },
   '四川': {
     name: '四川', type: '3+1+2',
-    tiers: {
-      physics: { benke: 459, tekong: 539 },
-      history: { benke: 457, tekong: 529 }
-    }
+    tiers: {physics:{benke:459,tekong:539,tekongRank:80000,benkeRank:200000},history:{benke:457,tekong:529,tekongRank:25000,benkeRank:60000}}
   },
   '山东': {
     name: '山东', type: '3+3',
-    tiers: {
-      unified: { benke: 444, tekong: 521 }
-    }
+    tiers: {unified:{benke:444,tekong:521,tekongRank:120000,benkeRank:300000}}
   },
   '浙江': {
     name: '浙江', type: '3+3',
-    tiers: {
-      unified: { benke: 488, tekong: 594 }
-    }
+    tiers: {unified:{benke:488,tekong:594,tekongRank:55000,benkeRank:160000}}
   },
   '北京': {
     name: '北京', type: '3+3',
-    tiers: {
-      unified: { benke: 434, tekong: 523 }
-    }
+    tiers: {unified:{benke:434,tekong:523,tekongRank:26000,benkeRank:42000}}
   },
   '上海': {
     name: '上海', type: '3+3',
-    tiers: {
-      unified: { benke: 403, tekong: 503 }
-    }
+    tiers: {unified:{benke:403,tekong:503,tekongRank:18000,benkeRank:38000}}
   },
   '天津': {
     name: '天津', type: '3+3',
-    tiers: {
-      unified: { benke: 475, tekong: 563 }
-    }
+    tiers: {unified:{benke:475,tekong:563,tekongRank:20000,benkeRank:42000}}
   },
   '陕西': {
     name: '陕西', type: '3+1+2',
-    tiers: {
-      physics: { benke: 402, tekong: 475 },
-      history: { benke: 417, tekong: 488 }
-    }
+    tiers: {physics:{benke:402,tekong:475,tekongRank:60000,benkeRank:120000},history:{benke:417,tekong:488,tekongRank:18000,benkeRank:40000}}
   },
   '山西': {
     name: '山西', type: '3+1+2',
-    tiers: {
-      physics: { benke: 417, tekong: 506 },
-      history: { benke: 442, tekong: 516 }
-    }
+    tiers: {physics:{benke:417,tekong:506,tekongRank:45000,benkeRank:100000},history:{benke:442,tekong:516,tekongRank:12000,benkeRank:30000}}
   },
   '黑龙江': {
     name: '黑龙江', type: '3+1+2',
-    tiers: {
-      physics: { benke: 360, tekong: 480 },
-      history: { benke: 380, tekong: 486 }
-    }
+    tiers: {physics:{benke:360,tekong:480,tekongRank:40000,benkeRank:85000},history:{benke:380,tekong:486,tekongRank:11000,benkeRank:25000}}
   },
   '吉林': {
     name: '吉林', type: '3+1+2',
-    tiers: {
-      physics: { benke: 345, tekong: 483 },
-      history: { benke: 369, tekong: 479 }
-    }
+    tiers: {physics:{benke:345,tekong:483,tekongRank:28000,benkeRank:65000},history:{benke:369,tekong:479,tekongRank:9000,benkeRank:22000}}
   },
 };
 
@@ -1716,7 +1663,7 @@ const UNI_DETAILS = {
   'sptc':{r:265,t:'专科',n:'公办',f:'3700-4800',a:'成都市锦江区静康路536号',d:'公办专科，位于成都。通信和邮政行业特色院校。',e:{rt:92,sl:'0.5-0.9万',em:['三大运营商','中国邮政','通信设备企业','IT企业']}},
 };
 
-// ==================== 城市→地域映射 ====================
+// ==================== 城市→地域+省份映射 ====================
 const CITY_REGION = {
   '北京':'华北','天津':'华北','石家庄':'华北','太原':'华北',
   '沈阳':'东北','大连':'东北','长春':'东北','哈尔滨':'东北',
@@ -1726,8 +1673,20 @@ const CITY_REGION = {
   '重庆':'西南','成都':'西南','自贡':'西南','绵阳':'西南','内江':'西南','乐山':'西南','宜宾':'西南','达州':'西南','攀枝花':'西南','西昌':'西南','康定':'西南','汶川':'西南','德阳':'西南','贵阳':'西南','昆明':'西南','安宁':'西南','简阳':'西南','都江堰':'西南','淮南':'华东',
   '西安':'西北','兰州':'西北',
 };
+const CITY_PROVINCE = {
+  '北京':'北京','天津':'天津','上海':'上海','重庆':'重庆',
+  '石家庄':'河北','太原':'山西','沈阳':'辽宁','大连':'辽宁','长春':'吉林','哈尔滨':'黑龙江',
+  '南京':'江苏','苏州':'江苏','杭州':'浙江','合肥':'安徽','淮南':'安徽','福州':'福建','厦门':'福建','南昌':'江西','济南':'山东','青岛':'山东','烟台':'山东',
+  '郑州':'河南','新乡':'河南','武汉':'湖北','黄石':'湖北','长沙':'湖南','衡阳':'湖南',
+  '广州':'广东','深圳':'广东','南宁':'广西','桂林':'广西',
+  '成都':'四川','自贡':'四川','绵阳':'四川','内江':'四川','乐山':'四川','宜宾':'四川','达州':'四川','攀枝花':'四川','西昌':'四川','康定':'四川','汶川':'四川','德阳':'四川','简阳':'四川','都江堰':'四川',
+  '贵阳':'贵州','昆明':'云南','安宁':'云南',
+  '西安':'陕西','兰州':'甘肃',
+};
 const REGIONS = ['华北','东北','华东','华中','华南','西南','西北'];
+const PROVINCES_FILTER = ['北京','天津','河北','山西','辽宁','吉林','黑龙江','上海','江苏','浙江','安徽','福建','江西','山东','河南','湖北','湖南','广东','广西','重庆','四川','贵州','云南','陕西','甘肃'];
 function getRegion(city) { return CITY_REGION[city] || '其他'; }
+function getProvince(city) { return CITY_PROVINCE[city] || city; }
 
 // ==================== 全局状态 ====================
 let state = {
@@ -1738,6 +1697,7 @@ let state = {
   allResults: [],           // 全部匹配结果
   filter: 'all',            // 'all' | 'chong' | 'wen' | 'bao'
   regionFilter: 'all',      // 'all' | '华北' | '东北' | '华东' | '华中' | '华南' | '西南' | '西北'
+  provinceFilter: 'all',    // 'all' | '四川' | '广东' ...
   sort: 'score_desc',       // 'score_desc' | 'score_asc' | 'name'
   searchQuery: '',
 };
@@ -1771,6 +1731,7 @@ function initProvinceSelect() {
 function bindEvents() {
   document.getElementById('provinceSelect').addEventListener('change', onProvinceChange);
   document.getElementById('scoreInput').addEventListener('input', onScoreInput);
+  document.getElementById('rankInput').addEventListener('input', syncScoreFromRank);
   document.getElementById('searchBtn').addEventListener('click', performSearch);
   document.getElementById('resetBtn').addEventListener('click', resetAll);
 
@@ -1870,6 +1831,74 @@ function showTierInfo() {
 function onScoreInput() {
   const val = parseInt(document.getElementById('scoreInput').value);
   state.score = isNaN(val) ? null : val;
+  if (state.score && state.province) syncRankFromScore();
+  updateSearchButton();
+}
+
+// ==================== 位次↔分数 转换 ====================
+function getTierRanks() {
+  if (!state.province) return null;
+  const p = state.province;
+  if (p.type === '3+1+2') {
+    const pref = state.preferredSubject || document.querySelector('input[name="preferred"]:checked');
+    if (pref && pref.value) return p.tiers[pref.value === '物理' ? 'physics' : 'history'];
+    if (pref) return p.tiers[pref === '物理' ? 'physics' : 'history'];
+    return p.tiers.physics; // 默认物理
+  }
+  return p.tiers.unified;
+}
+
+function rankToScore(rank) {
+  const tiers = getTierRanks();
+  if (!tiers || !tiers.tekongRank) return null;
+  if (rank <= 1) return 750;
+  if (rank >= tiers.benkeRank) {
+    // 低于本科线：线性外推
+    return Math.max(200, tiers.benke - (rank - tiers.benkeRank) / (tiers.benkeRank * 0.002) * 50);
+  }
+  if (rank <= tiers.tekongRank) {
+    // 高于特控线：用 sqrt 模拟非均匀分布
+    const ratio = rank / tiers.tekongRank;
+    return Math.round(750 - (750 - tiers.tekong) * Math.sqrt(ratio));
+  }
+  // 特控线~本科线之间：线性
+  const ratio2 = (rank - tiers.tekongRank) / (tiers.benkeRank - tiers.tekongRank);
+  return Math.round(tiers.tekong - (tiers.tekong - tiers.benke) * ratio2);
+}
+
+function scoreToRank(score) {
+  const tiers = getTierRanks();
+  if (!tiers || !tiers.tekongRank) return null;
+  if (score >= 750) return 1;
+  if (score <= tiers.benke) {
+    return Math.round(tiers.benkeRank + (tiers.benke - score) / 50 * tiers.benkeRank * 0.002);
+  }
+  if (score >= tiers.tekong) {
+    const ratio = (750 - score) / (750 - tiers.tekong);
+    return Math.round(tiers.tekongRank * ratio * ratio);
+  }
+  const ratio2 = (tiers.tekong - score) / (tiers.tekong - tiers.benke);
+  return Math.round(tiers.tekongRank + (tiers.benkeRank - tiers.tekongRank) * ratio2);
+}
+
+function syncRankFromScore() {
+  const rank = scoreToRank(state.score);
+  if (rank) {
+    document.getElementById('rankInput').value = rank;
+    document.getElementById('rankHint').textContent = '≈ 估算排名（仅供参考）';
+  }
+}
+
+function syncScoreFromRank() {
+  const rankVal = parseInt(document.getElementById('rankInput').value);
+  if (isNaN(rankVal) || rankVal < 1) return;
+  state.rank = rankVal;
+  const score = rankToScore(rankVal);
+  if (score) {
+    document.getElementById('scoreInput').value = score;
+    state.score = score;
+    document.getElementById('rankHint').textContent = '→ 估算分数约 ' + score + ' 分（仅供参考）';
+  }
   updateSearchButton();
 }
 
@@ -2020,6 +2049,7 @@ function performSearch() {
         tekong: tekong,
         benke: benke,
         region: getRegion(uni.city),
+        province: getProvince(uni.city),
       });
     });
   }
@@ -2077,6 +2107,10 @@ function renderResults() {
         <option value="all" ${state.regionFilter === 'all' ? 'selected' : ''}>🗺️ 全部地域</option>
         ${REGIONS.map(r => '<option value="' + r + '" ' + (state.regionFilter === r ? 'selected' : '') + '>' + r + '</option>').join('')}
       </select>
+      <select class="sort-select" id="provinceSelect2">
+        <option value="all" ${state.provinceFilter === 'all' ? 'selected' : ''}>📍 全部省份</option>
+        ${PROVINCES_FILTER.map(r => '<option value="' + r + '" ' + (state.provinceFilter === r ? 'selected' : '') + '>' + r + '</option>').join('')}
+      </select>
       <select class="sort-select" id="sortSelect">
         <option value="score_desc" ${state.sort === 'score_desc' ? 'selected' : ''}>📊 参考分 ↓</option>
         <option value="score_asc" ${state.sort === 'score_asc' ? 'selected' : ''}>📊 参考分 ↑</option>
@@ -2105,6 +2139,10 @@ function renderResults() {
     state.regionFilter = e.target.value;
     renderResults();
   });
+  document.getElementById('provinceSelect2').addEventListener('change', (e) => {
+    state.provinceFilter = e.target.value;
+    renderResults();
+  });
 
   // 渲染卡片
   if (filtered.length === 0) {
@@ -2130,6 +2168,11 @@ function getFilteredResults() {
   // 按地域筛选
   if (state.regionFilter !== 'all') {
     results = results.filter(r => r.region === state.regionFilter);
+  }
+
+  // 按省份筛选
+  if (state.provinceFilter !== 'all') {
+    results = results.filter(r => r.province === state.provinceFilter);
   }
 
   // 按搜索词筛选
@@ -2211,6 +2254,7 @@ function createCard(result) {
       <div class="card-info">
         <span class="card-tag">📍 ${escapeHtml(uni.city)}</span>
         <span class="card-tag score">📊 2025参考：${result.referenceScore} 分</span>
+        ${state.rank || state.score ? '<span class="card-tag" style="background:#fef3c7;color:#92400e;">🏅 约' + (scoreToRank(result.referenceScore) || '--') + '名</span>' : ''}
         <span class="card-tag subjects">📋 ${subjectReq}</span>
         ${detail.f ? '<span class="card-tag fee">💰 ' + detail.f + '元/年</span>' : ''}
       </div>
@@ -2376,6 +2420,7 @@ function resetAll() {
     allResults: [],
     filter: 'all',
     regionFilter: 'all',
+    provinceFilter: 'all',
     sort: 'score_desc',
     searchQuery: '',
   };
