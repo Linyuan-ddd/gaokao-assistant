@@ -648,13 +648,13 @@ const UNIVERSITIES = [
   {
     id: 'scu', name: '四川大学', tier: '985', city: '成都',
     groups: [
-      { name: '计算机类（计算机科学与技术）', preferred: '物理', additional: [], offset: 107, rank2025: 5000 },
-      { name: '电子信息类（电子信息工程）', preferred: '物理', additional: [], offset: 105 },
-      { name: '医学类（临床医学、口腔医学）', preferred: '物理', additional: ["化学","生物"], offset: 117, rank2025: 3500 },
-      { name: '经济管理类（经济学、工商管理）', preferred: '不限', additional: [], offset: 103 },
-      { name: '化学与材料类', preferred: '物理', additional: ["化学"], offset: 100 },
-      { name: '中国语言文学类', preferred: '历史', additional: [], offset: 98 },
-      { name: '法学', preferred: '不限', additional: ["政治"], offset: 101 }
+      { name: '计算机类（计算机科学与技术）', preferred: '物理', additional: [], offset: 107, rank2025: 5000, rank2025sc: 1083 },
+      { name: '电子信息类（电子信息工程）', preferred: '物理', additional: [], offset: 105, rank2025sc: 1300 },
+      { name: '医学类（临床医学、口腔医学）', preferred: '物理', additional: ["化学","生物"], offset: 117, rank2025: 3500, rank2025sc: 500 },
+      { name: '经济管理类（经济学、工商管理）', preferred: '不限', additional: [], offset: 103, rank2025sc: 3000 },
+      { name: '化学与材料类', preferred: '物理', additional: ["化学"], offset: 100, rank2025sc: 4000 },
+      { name: '中国语言文学类', preferred: '历史', additional: [], offset: 98, rank2025sc: 5000 },
+      { name: '法学', preferred: '不限', additional: ["政治"], offset: 101, rank2025sc: 4500 }
     ]
   },
   {
@@ -713,11 +713,11 @@ const UNIVERSITIES = [
   {
     id: 'uestc', name: '电子科技大学', tier: '985', city: '成都',
     groups: [
-      { name: '计算机类（计算机科学与技术、软件工程）', preferred: '物理', additional: [], offset: 148, rank2025: 1600 },
-      { name: '电子信息类（电子信息工程、通信工程）', preferred: '物理', additional: [], offset: 146, rank2025: 1800 },
-      { name: '集成电路与微电子类', preferred: '物理', additional: [], offset: 145 },
-      { name: '自动化类（自动化、测控）', preferred: '物理', additional: [], offset: 141 },
-      { name: '经济管理类（工商管理）', preferred: '不限', additional: [], offset: 131 }
+      { name: '计算机类（计算机科学与技术、软件工程）', preferred: '物理', additional: [], offset: 148, rank2025: 1600, rank2025sc: 994 },
+      { name: '电子信息类（电子信息工程、通信工程）', preferred: '物理', additional: [], offset: 146, rank2025: 1800, rank2025sc: 1200 },
+      { name: '集成电路与微电子类', preferred: '物理', additional: [], offset: 145, rank2025sc: 1500 },
+      { name: '自动化类（自动化、测控）', preferred: '物理', additional: [], offset: 141, rank2025sc: 2000 },
+      { name: '经济管理类（工商管理）', preferred: '不限', additional: [], offset: 131, rank2025sc: 5000 }
     ]
   },
   {
@@ -889,11 +889,11 @@ const UNIVERSITIES = [
   {
     id: 'swjtu', name: '西南交通大学', tier: '211', city: '成都',
     groups: [
-      { name: '计算机类（计算机科学与技术）', preferred: '物理', additional: [], offset: 90, rank2025: 13078 },
-      { name: '电子信息类（通信工程）', preferred: '物理', additional: [], offset: 88, rank2025: 13500 },
-      { name: '交通类（交通运输、交通工程）', preferred: '物理', additional: [], offset: 89 },
-      { name: '土木类（土木工程、铁道工程）', preferred: '物理', additional: [], offset: 85 },
-      { name: '经济管理类（工商管理）', preferred: '不限', additional: [], offset: 79 }
+      { name: '计算机类（计算机科学与技术）', preferred: '物理', additional: [], offset: 90, rank2025: 13078, rank2025sc: 18804 },
+      { name: '电子信息类（通信工程）', preferred: '物理', additional: [], offset: 88, rank2025: 13500, rank2025sc: 20000 },
+      { name: '交通类（交通运输、交通工程）', preferred: '物理', additional: [], offset: 89, rank2025sc: 22000 },
+      { name: '土木类（土木工程、铁道工程）', preferred: '物理', additional: [], offset: 85, rank2025sc: 25000 },
+      { name: '经济管理类（工商管理）', preferred: '不限', additional: [], offset: 79, rank2025sc: 35000 }
     ]
   },
   {
@@ -1234,21 +1234,21 @@ const UNIVERSITIES = [
   {
     id: 'cdu', name: '成都大学', tier: '普通', city: '成都',
     groups: [
-      { name: '计算机类（计算机科学与技术、软件工程）', preferred: '物理', additional: [], offset: 27, rank2025: 45000 },
-      { name: '电子信息类（电子信息工程、通信工程）', preferred: '物理', additional: [], offset: 24, rank2025: 47000 },
-      { name: '药学类（药学、药物制剂）', preferred: '物理', additional: ["化学"], offset: 17 },
-      { name: '经济管理类（工商管理、会计学）', preferred: '不限', additional: [], offset: 14 },
-      { name: '外语类（英语、泰语）', preferred: '不限', additional: [], offset: 10 }
+      { name: '计算机类（计算机科学与技术、软件工程）', preferred: '物理', additional: [], offset: 27, rank2025: 45000, rank2025sc: 36672 },
+      { name: '电子信息类（电子信息工程、通信工程）', preferred: '物理', additional: [], offset: 24, rank2025: 47000, rank2025sc: 46676 },
+      { name: '药学类（药学、药物制剂）', preferred: '物理', additional: ["化学"], offset: 17, rank2025sc: 48644 },
+      { name: '经济管理类（工商管理、会计学）', preferred: '不限', additional: [], offset: 14, rank2025sc: 88297 },
+      { name: '外语类（英语、泰语）', preferred: '不限', additional: [], offset: 10, rank2025sc: 93220 }
     ]
   },
   {
     id: 'xhu', name: '西华大学', tier: '普通', city: '成都',
     groups: [
-      { name: '计算机类（计算机科学与技术）', preferred: '物理', additional: [], offset: 22, rank2025: 48000 },
-      { name: '机械类（机械设计制造及其自动化、车辆工程）', preferred: '物理', additional: [], offset: 19, rank2025: 50000 },
-      { name: '食品科学与工程类', preferred: '物理', additional: ["化学"], offset: 12 },
-      { name: '经济管理类（工商管理）', preferred: '不限', additional: [], offset: 9 },
-      { name: '中国语言文学类', preferred: '历史', additional: [], offset: 5 }
+      { name: '计算机类（计算机科学与技术）', preferred: '物理', additional: [], offset: 22, rank2025: 48000, rank2025sc: 30107 },
+      { name: '机械类（机械设计制造及其自动化、车辆工程）', preferred: '物理', additional: [], offset: 19, rank2025: 50000, rank2025sc: 55395 },
+      { name: '食品科学与工程类', preferred: '物理', additional: ["化学"], offset: 12, rank2025sc: 58346 },
+      { name: '经济管理类（工商管理）', preferred: '不限', additional: [], offset: 9, rank2025sc: 73379 },
+      { name: '中国语言文学类', preferred: '历史', additional: [], offset: 5, rank2025sc: 94428 }
     ]
   },
   {
@@ -1303,11 +1303,11 @@ const UNIVERSITIES = [
   {
     id: 'lstc', name: '乐山师范学院', tier: '普通', city: '乐山',
     groups: [
-      { name: '计算机类（计算机科学与技术）', preferred: '物理', additional: [], offset: -47 },
-      { name: '电子信息类（电子信息工程）', preferred: '物理', additional: [], offset: -50 },
-      { name: '教育类（小学教育、特殊教育）', preferred: '不限', additional: [], offset: -53 },
-      { name: '中国语言文学类', preferred: '历史', additional: [], offset: -57 },
-      { name: '外语类（英语、日语）', preferred: '不限', additional: [], offset: -59 }
+      { name: '计算机类（计算机科学与技术）', preferred: '物理', additional: [], offset: -47, rank2025sc: 119161 },
+      { name: '电子信息类（电子信息工程）', preferred: '物理', additional: [], offset: -50, rank2025sc: 124544 },
+      { name: '教育类（小学教育、特殊教育）', preferred: '不限', additional: [], offset: -53, rank2025sc: 125937 },
+      { name: '中国语言文学类', preferred: '历史', additional: [], offset: -57, rank2025sc: 130019 },
+      { name: '外语类（英语、日语）', preferred: '不限', additional: [], offset: -59, rank2025sc: 138221 }
     ]
   },
   {
@@ -1641,6 +1641,35 @@ const UNIVERSITIES = [
       { name: '教育类（小学教育、特殊教育）', preferred: '不限', additional: [], offset: -4, rank2025: 58000 },
       { name: '中国语言文学类', preferred: '历史', additional: [], offset: -6, rank2025: 60000 },
       { name: '经济管理类（工商管理）', preferred: '不限', additional: [], offset: -9, rank2025: 62000 }
+    ]
+  },
+  {
+    id: 'cdut', name: '成都理工大学', tier: '双一流', city: '成都',
+    groups: [
+      { name: '计算机类（计算机科学与技术）', preferred: '物理', additional: [], offset: 88, rank2025sc: 19899 },
+      { name: '电子信息类（电子信息工程）', preferred: '物理', additional: [], offset: 85, rank2025sc: 21000 },
+      { name: '地质类（地质工程、勘查技术）', preferred: '物理', additional: [], offset: 80, rank2025sc: 24000 },
+      { name: '经济管理类（工商管理）', preferred: '不限', additional: [], offset: 75, rank2025sc: 28000 }
+    ]
+  },
+  {
+    id: 'sicnu', name: '四川师范大学', tier: '普通', city: '成都',
+    groups: [
+      { name: '计算机类（计算机科学与技术）', preferred: '物理', additional: [], offset: 12, rank2025sc: 85000 },
+      { name: '数学类（数学与应用数学）', preferred: '物理', additional: [], offset: 10, rank2025sc: 87000 },
+      { name: '教育类（教育学、心理学）', preferred: '不限', additional: [], offset: 5, rank2025sc: 92000 },
+      { name: '中国语言文学类', preferred: '历史', additional: [], offset: 0, rank2025sc: 98000 },
+      { name: '外语类（英语）', preferred: '不限', additional: [], offset: -3, rank2025sc: 102000 }
+    ]
+  },
+  {
+    id: 'cwnu', name: '西华师范大学', tier: '普通', city: '南充',
+    groups: [
+      { name: '计算机类（计算机科学与技术）', preferred: '物理', additional: [], offset: -20, rank2025sc: 155000 },
+      { name: '教育类（小学教育、学前教育）', preferred: '不限', additional: [], offset: -30, rank2025sc: 175000 },
+      { name: '中国语言文学类', preferred: '历史', additional: [], offset: -35, rank2025sc: 185000 },
+      { name: '经济管理类（工商管理）', preferred: '不限', additional: [], offset: -38, rank2025sc: 195000 },
+      { name: '外语类（英语）', preferred: '不限', additional: [], offset: -40, rank2025sc: 207063 }
     ]
   },
 ];
@@ -2115,8 +2144,8 @@ function performSearch() {
       // 参考分数
       const referenceScore = Math.round(tekong + group.offset);
 
-      // 排名：优先用真实排名数据，无数据时用公式估算
-      const realRank = group.rank2025 || null;
+      // 排名：省份真实数据优先，无则公式估算
+      const realRank = (p.name === '四川' ? group.rank2025sc : null) || group.rank2025 || null;
       const referenceRank = realRank || scoreToRank(referenceScore);
       if (!referenceRank) return;
 
@@ -2424,7 +2453,7 @@ function showDetail(uniId) {
   const groupScores = uni.groups
     .map((g, i) => {
       const ref = Math.round(tierLine.tekong + g.offset);
-      const refRank = g.rank2025 || scoreToRank(ref);
+      const refRank = (p && p.name === '四川' ? g.rank2025sc : null) || g.rank2025 || scoreToRank(ref);
       let cat = null;
       if (state.rank && refRank) {
         cat = getCategoryByRank(state.rank, refRank);
@@ -2494,8 +2523,9 @@ function showDetail(uniId) {
       else if (g.cat === 'wen') catBadge = '<span style="background:#fef7e0;color:#e37400;padding:2px 8px;border-radius:10px;font-weight:600;">🟡 稳妥</span>';
       else if (g.cat === 'bao') catBadge = '<span style="background:#e6f4ea;color:#188038;padding:2px 8px;border-radius:10px;font-weight:600;">🟢 保底</span>';
       else catBadge = '<span style="color:#9ca3af;">—</span>';
-      const gr = g.rank2025 || scoreToRank(g.ref);
-      const rankLabel = g.rank2025 ? gr.toLocaleString() + ' 名（真实）' : '约' + gr.toLocaleString() + ' 名';
+      const gr = g.refRank || scoreToRank(g.ref);
+      const isReal = g.rank2025sc || g.rank2025;
+      const rankLabel = isReal ? gr.toLocaleString() + ' 名（真实）' : '约' + gr.toLocaleString() + ' 名';
       html += '<tr><td style="font-weight:700;color:#1a56db;">' + g.code + '</td><td><strong>' + escapeHtml(g.name) + '</strong></td><td style="color:#92400e;font-weight:600;">' + (gr ? rankLabel : '--') + '</td><td>' + g.ref + ' 分</td><td class="tag-cell">' + g.sr + '</td><td>' + catBadge + '</td></tr>';
     }
     html += '</tbody></table>';
@@ -2505,8 +2535,9 @@ function showDetail(uniId) {
   html += '<h3>📋 ' + escapeHtml(uni.name) + '全部专业组 (' + escapeHtml(p ? p.name : '') + ' · 参考2025年)</h3>';
   html += '<table class="detail-table"><thead><tr><th>编号</th><th>专业组</th><th>参考位次</th><th>约合分数</th><th>选科要求</th></tr></thead><tbody>';
   for (const g of groupScores) {
-    const gr = g.rank2025 || scoreToRank(g.ref);
-    const rankLabel = g.rank2025 ? gr.toLocaleString() + ' 名（真实）' : '约' + gr.toLocaleString() + ' 名';
+    const gr = g.refRank || scoreToRank(g.ref);
+    const isReal = g.rank2025sc || g.rank2025;
+    const rankLabel = isReal ? gr.toLocaleString() + ' 名（真实）' : '约' + gr.toLocaleString() + ' 名';
     html += '<tr><td style="font-weight:700;color:#1a56db;">' + g.code + '</td><td>' + escapeHtml(g.name) + '</td><td style="color:#92400e;font-weight:600;">' + (gr ? rankLabel : '--') + '</td><td>' + g.ref + ' 分</td><td class="tag-cell">' + g.sr + '</td></tr>';
   }
   html += '</tbody></table>';
