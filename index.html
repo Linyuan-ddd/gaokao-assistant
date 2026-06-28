@@ -2399,7 +2399,7 @@ function showDetail(uniId) {
       // 选科要求文字
       let sr = g.preferred === '物理' ? '必选物理' : g.preferred === '历史' ? '必选历史' : '不限首选';
       if (g.additional && g.additional.length > 0) sr += '+' + g.additional.join('/');
-      return { ...g, ref, diff, cat, sr, code: String(i + 1).padStart(2, '0') };
+      return { ...g, ref, refRank, cat, sr, code: String(i + 1).padStart(2, '0') };
     })
     .sort((a, b) => b.ref - a.ref);
 
