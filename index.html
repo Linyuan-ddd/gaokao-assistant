@@ -1,0 +1,2380 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>高考志愿填报助手 · 2026</title>
+<style>
+/* ========== 全局样式 ========== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --blue: #1a73e8; --blue-light: #e8f0fe; --blue-dark: #1557b0;
+  --red: #d93025; --red-light: #fce8e6;
+  --amber: #e37400; --amber-light: #fef7e0;
+  --green: #188038; --green-light: #e6f4ea;
+  --bg: #f2f4f7; --card: #fff; --border: #e0e4e8;
+  --text: #1f2937; --text-secondary: #6b7280;
+  --shadow: 0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.06);
+  --shadow-lg: 0 4px 12px rgba(0,0,0,.1);
+  --radius: 12px;
+}
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", "Helvetica Neue", sans-serif;
+  background: var(--bg); color: var(--text); line-height: 1.6; min-height: 100vh;
+}
+
+/* ========== 头部 ========== */
+.header {
+  background: linear-gradient(135deg, #1a56db 0%, #1e40af 50%, #1e3a8a 100%);
+  color: #fff; padding: 28px 24px 24px; text-align: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,.15); position: relative; overflow: hidden;
+}
+.header::after {
+  content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+  background: radial-gradient(circle at 30% 70%, rgba(255,255,255,.06) 0%, transparent 50%);
+}
+.header h1 { font-size: 28px; font-weight: 700; letter-spacing: 1px; position: relative; z-index: 1; }
+.header .subtitle { font-size: 14px; opacity: .85; margin-top: 6px; position: relative; z-index: 1; }
+.header .badge {
+  display: inline-block; background: rgba(255,255,255,.18); border: 1px solid rgba(255,255,255,.3);
+  border-radius: 20px; padding: 3px 12px; font-size: 12px; margin-top: 8px; position: relative; z-index: 1;
+}
+
+/* ========== 主体布局 ========== */
+.container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+
+/* ========== 输入区域 ========== */
+.input-panel {
+  background: var(--card); border-radius: var(--radius); padding: 24px;
+  box-shadow: var(--shadow); margin-bottom: 20px;
+}
+.input-panel h2 { font-size: 18px; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+.input-panel h2::before { content: '📋'; font-size: 20px; }
+.input-row { display: flex; gap: 16px; flex-wrap: wrap; align-items: flex-end; }
+.input-group { flex: 1; min-width: 180px; }
+.input-group label { display: block; font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px; }
+.input-group select, .input-group input {
+  width: 100%; padding: 10px 14px; border: 2px solid var(--border); border-radius: 8px;
+  font-size: 15px; font-family: inherit; background: #fafbfc; transition: border-color .2s;
+}
+.input-group select:focus, .input-group input:focus { outline: none; border-color: var(--blue); background: #fff; }
+.input-group select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M6 8L1 3h10z' fill='%236b7280'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px; cursor: pointer; }
+.btn {
+  padding: 10px 28px; border: none; border-radius: 8px; font-size: 15px; font-weight: 600;
+  cursor: pointer; transition: all .2s; font-family: inherit; white-space: nowrap;
+}
+.btn-primary { background: var(--blue); color: #fff; }
+.btn-primary:hover { background: var(--blue-dark); transform: translateY(-1px); box-shadow: var(--shadow-lg); }
+.btn-primary:active { transform: translateY(0); }
+.btn-outline { background: #fff; color: var(--blue); border: 2px solid var(--blue); }
+.btn-outline:hover { background: var(--blue-light); }
+.btn-sm { padding: 6px 14px; font-size: 13px; }
+
+/* 批次线提示 */
+.tier-info {
+  margin-top: 14px; padding: 12px 16px; background: var(--blue-light); border-radius: 8px;
+  font-size: 13px; color: var(--blue-dark); display: none;
+}
+.tier-info.show { display: block; }
+.tier-info strong { font-weight: 700; }
+
+/* 选科复选框 */
+.subject-checks { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 6px; }
+.subject-checks label {
+  display: flex; align-items: center; gap: 6px; padding: 6px 14px; border: 2px solid var(--border);
+  border-radius: 20px; font-size: 13px; cursor: pointer; transition: all .2s; user-select: none;
+}
+.subject-checks label:hover { border-color: var(--blue); }
+.subject-checks input[type="radio"], .subject-checks input[type="checkbox"] { display: none; }
+.subject-checks input:checked + span { color: var(--blue); font-weight: 700; }
+.subject-checks label:has(input:checked) { border-color: var(--blue); background: var(--blue-light); }
+
+/* ========== 结果工具栏 ========== */
+.results-toolbar {
+  display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin-bottom: 16px;
+  justify-content: space-between;
+}
+.toolbar-left { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.stat-badge {
+  padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 600;
+  cursor: pointer; border: 2px solid transparent; transition: all .2s;
+}
+.stat-badge.all { background: #f3f4f6; color: var(--text); border-color: #d1d5db; }
+.stat-badge.all.active { background: #374151; color: #fff; border-color: #374151; }
+.stat-badge.chong { background: var(--red-light); color: var(--red); }
+.stat-badge.chong.active { background: var(--red); color: #fff; }
+.stat-badge.wen { background: var(--amber-light); color: var(--amber); }
+.stat-badge.wen.active { background: var(--amber); color: #fff; }
+.stat-badge.bao { background: var(--green-light); color: var(--green); }
+.stat-badge.bao.active { background: var(--green); color: #fff; }
+.sort-select {
+  padding: 6px 30px 6px 12px; border: 2px solid var(--border); border-radius: 20px;
+  font-size: 13px; background: #fff; cursor: pointer; font-family: inherit;
+  appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M6 8L1 3h10z' fill='%236b7280'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 8px center;
+}
+.search-input {
+  padding: 6px 14px; border: 2px solid var(--border); border-radius: 20px; font-size: 13px;
+  width: 200px; font-family: inherit;
+}
+.search-input:focus { outline: none; border-color: var(--blue); }
+
+/* ========== 结果卡片 ========== */
+.results-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 16px; }
+.result-card {
+  background: var(--card); border-radius: var(--radius); padding: 20px;
+  box-shadow: var(--shadow); border-left: 4px solid transparent; transition: all .2s;
+  cursor: default; position: relative;
+}
+.result-card:hover { box-shadow: var(--shadow-lg); transform: translateY(-2px); }
+.result-card.chong { border-left-color: var(--red); }
+.result-card.wen { border-left-color: var(--amber); }
+.result-card.bao { border-left-color: var(--green); }
+.card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+.card-uni { font-size: 17px; font-weight: 700; color: #111827; }
+.card-tier {
+  font-size: 11px; padding: 2px 8px; border-radius: 10px; font-weight: 600;
+  background: #f3f4f6; color: var(--text-secondary);
+}
+.card-tier.c9 { background: #fef3c7; color: #92400e; }
+.card-tier.t985 { background: #dbeafe; color: #1e40af; }
+.card-tier.t211 { background: #e0e7ff; color: #3730a3; }
+.card-tier.double-first { background: #fce7f3; color: #9d174d; }
+.card-tier.regular { background: #f3f4f6; color: #6b7280; }
+.card-tier.zk { background: #fef2f2; color: #991b1b; }
+.card-nature { font-size: 11px; padding: 2px 8px; border-radius: 10px; font-weight: 600; }
+.card-nature.public { background: #e6f4ea; color: #188038; }
+.card-nature.private { background: #fff7ed; color: #c2410c; }
+.card-tag.fee { background: #f0fdf4; color: #166534; }
+.tier-badges { display: inline-flex; gap: 4px; flex-wrap: wrap; align-items: center; }
+.card-group-name { font-size: 14px; color: #4b5563; margin-bottom: 8px; }
+.card-info { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+.card-tag {
+  font-size: 12px; padding: 3px 10px; border-radius: 12px; font-weight: 500;
+  background: #f3f4f6; color: var(--text-secondary);
+}
+.card-tag.score { background: #e8f0fe; color: #1a56db; font-weight: 700; font-size: 13px; }
+.card-tag.subjects { background: #fef3c7; color: #92400e; }
+.card-footer { display: flex; justify-content: space-between; align-items: center; }
+.card-category {
+  font-size: 13px; font-weight: 700; padding: 4px 14px; border-radius: 16px;
+}
+.card-category.chong { background: var(--red-light); color: var(--red); }
+.card-category.wen { background: var(--amber-light); color: var(--amber); }
+.card-category.bao { background: var(--green-light); color: var(--green); }
+.card-diff { font-size: 12px; color: var(--text-secondary); }
+
+/* ========== 空状态 ========== */
+.empty-state { text-align: center; padding: 60px 20px; color: var(--text-secondary); }
+.empty-state .icon { font-size: 48px; margin-bottom: 12px; }
+.empty-state h3 { font-size: 18px; margin-bottom: 6px; color: var(--text); }
+.intro-state { text-align: center; padding: 40px 20px; }
+.intro-state .steps { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; margin-top: 20px; }
+.intro-state .step {
+  background: var(--card); border-radius: var(--radius); padding: 20px; width: 150px;
+  text-align: center; box-shadow: var(--shadow);
+}
+.intro-state .step .num { font-size: 28px; font-weight: 800; color: var(--blue); margin-bottom: 6px; }
+.intro-state .step .desc { font-size: 13px; color: var(--text-secondary); }
+
+/* ========== 免责声明 ========== */
+.disclaimer {
+  margin-top: 24px; padding: 16px; background: #fffbeb; border: 1px solid #fde68a;
+  border-radius: 8px; font-size: 12px; color: #92400e; line-height: 1.8;
+}
+.disclaimer strong { color: #78350f; }
+
+/* ========== 弹窗/详情面板 ========== */
+.modal-overlay {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0,0,0,.55); z-index: 999; display: flex; align-items: center; justify-content: center;
+  animation: fadeIn .2s ease;
+}
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+.modal-panel {
+  background: #fff; border-radius: 16px; width: 90%; max-width: 720px; max-height: 85vh;
+  overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,.25); animation: slideUp .3s ease;
+  position: relative;
+}
+.modal-close {
+  position: sticky; top: 12px; float: right; z-index: 10;
+  width: 36px; height: 36px; border-radius: 50%; border: none; background: #f3f4f6;
+  font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  margin-right: 12px; transition: background .2s;
+}
+.modal-close:hover { background: #e5e7eb; }
+.modal-header {
+  padding: 24px 24px 0;
+  background: linear-gradient(135deg, #1a56db 0%, #1e3a8a 100%);
+  color: #fff; border-radius: 16px 16px 0 0; min-height: 60px;
+}
+.modal-header h2 { font-size: 22px; margin-bottom: 4px; }
+.modal-header .meta { font-size: 13px; opacity: .85; }
+.modal-header .meta span { margin-right: 12px; }
+.modal-body { padding: 20px 24px 24px; }
+.modal-body h3 { font-size: 16px; margin: 18px 0 10px; padding-bottom: 6px; border-bottom: 2px solid #e5e7eb; }
+.modal-body h3:first-child { margin-top: 0; }
+.modal-body .desc { font-size: 14px; color: #4b5563; line-height: 1.8; }
+.detail-table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 8px 0; }
+.detail-table th { background: #f9fafb; padding: 8px 10px; text-align: left; font-weight: 600; color: #374151; border-bottom: 2px solid #e5e7eb; white-space: nowrap; }
+.detail-table td { padding: 8px 10px; border-bottom: 1px solid #f3f4f6; }
+.detail-table tr:hover td { background: #f9fafb; }
+.detail-table .tag-cell { font-size: 11px; }
+.employ-stats { display: flex; gap: 16px; flex-wrap: wrap; margin: 8px 0; }
+.employ-stat {
+  flex: 1; min-width: 120px; padding: 14px; background: #f9fafb; border-radius: 10px; text-align: center;
+}
+.employ-stat .val { font-size: 22px; font-weight: 700; color: #1a56db; }
+.employ-stat .lbl { font-size: 12px; color: #6b7280; margin-top: 2px; }
+.employ-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.employ-tag { padding: 4px 12px; background: #e8f0fe; color: #1a56db; border-radius: 16px; font-size: 12px; }
+
+/* ========== 响应式 ========== */
+@media (max-width: 768px) {
+  .header h1 { font-size: 22px; }
+  .results-grid { grid-template-columns: 1fr; }
+  .input-row { flex-direction: column; }
+  .input-group { min-width: 100%; }
+  .results-toolbar { flex-direction: column; align-items: stretch; }
+  .search-input { width: 100%; }
+}
+@media (max-width: 480px) {
+  .container { padding: 10px; }
+  .input-panel { padding: 16px; }
+  .result-card { padding: 14px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ==================== 头部 ==================== -->
+<header class="header">
+  <h1>🎓 高考志愿填报助手</h1>
+  <p class="subtitle">输入你的高考分数，智能匹配可报考的学校与专业组</p>
+  <span class="badge">📊 基于 2025 年录取数据 · 2026 参考版</span>
+</header>
+
+<!-- ==================== 主体 ==================== -->
+<div class="container">
+
+  <!-- 输入面板 -->
+  <div class="input-panel" id="inputPanel">
+    <h2>填写你的信息</h2>
+    <div class="input-row">
+      <div class="input-group">
+        <label>📍 高考省份</label>
+        <select id="provinceSelect">
+          <option value="">-- 请选择省份 --</option>
+        </select>
+      </div>
+      <div class="input-group">
+        <label>📝 高考总分</label>
+        <input type="number" id="scoreInput" placeholder="输入你的分数" min="0" max="750" step="1">
+      </div>
+      <div class="input-group" id="preferredSubjectGroup" style="display:none;">
+        <label>🎯 首选科目</label>
+        <div class="subject-checks" id="preferredSubjectChecks"></div>
+      </div>
+    </div>
+    <div class="input-row" style="margin-top:12px;">
+      <div class="input-group" id="additionalSubjectsGroup" style="display:none;">
+        <label>📚 再选科目（可多选）</label>
+        <div class="subject-checks" id="additionalSubjectChecks"></div>
+      </div>
+      <div class="input-group" id="artsScienceGroup" style="display:none;">
+        <label>🎯 文理科</label>
+        <div class="subject-checks" id="artsScienceChecks"></div>
+      </div>
+    </div>
+    <div class="tier-info" id="tierInfo"></div>
+    <div style="margin-top:16px;">
+      <button class="btn btn-primary" id="searchBtn" disabled>🔍 查询可报考学校</button>
+      <button class="btn btn-outline" id="resetBtn" style="margin-left:8px;">↺ 重置</button>
+    </div>
+  </div>
+
+  <!-- 结果区域 -->
+  <div id="resultsArea">
+    <div class="intro-state" id="introState">
+      <p style="font-size:42px;">📖</p>
+      <h3>如何使用？</h3>
+      <div class="steps">
+        <div class="step"><div class="num">1</div><div class="desc">选择你的高考省份</div></div>
+        <div class="step"><div class="num">2</div><div class="desc">输入高考总分</div></div>
+        <div class="step"><div class="num">3</div><div class="desc">选择你的选科组合</div></div>
+        <div class="step"><div class="num">4</div><div class="desc">点击查询，获取结果</div></div>
+      </div>
+    </div>
+    <div id="resultsContent" style="display:none;">
+      <div class="results-toolbar" id="resultsToolbar"></div>
+      <div id="scoreWarning" style="display:none;margin-bottom:16px;padding:14px 18px;background:#fef2f2;border:1px solid #fecaca;border-radius:10px;font-size:14px;color:#991b1b;line-height:1.7;"></div>
+      <div class="results-grid" id="resultsGrid"></div>
+      <div class="empty-state" id="emptyState" style="display:none;">
+        <div class="icon">🔍</div>
+        <h3>没有匹配的结果</h3>
+        <p>尝试调整筛选条件或选科组合</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 免责声明 -->
+  <div class="disclaimer">
+    <strong>⚠️ 重要声明：</strong>本工具基于 <strong>2025 年</strong>各省公开的录取数据进行分析，
+    仅为 <strong>2026 年</strong>高考志愿填报提供参考。<br>
+    实际录取分数线会因试题难度、报考人数、招生计划等因素而变化。<br>
+    最终志愿填报请以各省教育考试院官方发布的 <strong>2026 年招生计划</strong>和<strong>录取数据</strong>为准。<br>
+    "冲稳保"分类仅供参考，不代表实际录取结果。请结合自身情况谨慎填报。
+  </div>
+
+</div>
+
+<script>
+// ==================== 省份数据 ====================
+// type: '3+1+2' | '3+3' | '文理'
+// For 3+1+2: tiers.physics = {benke:本科线, tekong:特控线}, tiers.history similar
+// For 3+3: tiers.unified = {benke:本科线, tekong:特控线}
+// For 文理: tiers.science = {benke:二本, yiben:一本}, tiers.arts similar
+const PROVINCES = {
+  '广东': {
+    name: '广东', type: '3+1+2',
+    tiers: {
+      physics: { benke: 442, tekong: 538 },
+      history: { benke: 428, tekong: 539 }
+    }
+  },
+  '江苏': {
+    name: '江苏', type: '3+1+2',
+    tiers: {
+      physics: { benke: 462, tekong: 516 },
+      history: { benke: 478, tekong: 530 }
+    }
+  },
+  '湖北': {
+    name: '湖北', type: '3+1+2',
+    tiers: {
+      physics: { benke: 437, tekong: 525 },
+      history: { benke: 432, tekong: 530 }
+    }
+  },
+  '湖南': {
+    name: '湖南', type: '3+1+2',
+    tiers: {
+      physics: { benke: 422, tekong: 481 },
+      history: { benke: 438, tekong: 496 }
+    }
+  },
+  '河北': {
+    name: '河北', type: '3+1+2',
+    tiers: {
+      physics: { benke: 448, tekong: 524 },
+      history: { benke: 449, tekong: 523 }
+    }
+  },
+  '辽宁': {
+    name: '辽宁', type: '3+1+2',
+    tiers: {
+      physics: { benke: 368, tekong: 510 },
+      history: { benke: 400, tekong: 510 }
+    }
+  },
+  '福建': {
+    name: '福建', type: '3+1+2',
+    tiers: {
+      physics: { benke: 449, tekong: 538 },
+      history: { benke: 431, tekong: 519 }
+    }
+  },
+  '重庆': {
+    name: '重庆', type: '3+1+2',
+    tiers: {
+      physics: { benke: 427, tekong: 499 },
+      history: { benke: 428, tekong: 506 }
+    }
+  },
+  '安徽': {
+    name: '安徽', type: '3+1+2',
+    tiers: {
+      physics: { benke: 465, tekong: 514 },
+      history: { benke: 462, tekong: 512 }
+    }
+  },
+  '江西': {
+    name: '江西', type: '3+1+2',
+    tiers: {
+      physics: { benke: 448, tekong: 520 },
+      history: { benke: 463, tekong: 528 }
+    }
+  },
+  '河南': {
+    name: '河南', type: '3+1+2',
+    tiers: {
+      physics: { benke: 396, tekong: 511 },
+      history: { benke: 428, tekong: 521 }
+    }
+  },
+  '四川': {
+    name: '四川', type: '3+1+2',
+    tiers: {
+      physics: { benke: 459, tekong: 539 },
+      history: { benke: 457, tekong: 529 }
+    }
+  },
+  '山东': {
+    name: '山东', type: '3+3',
+    tiers: {
+      unified: { benke: 444, tekong: 521 }
+    }
+  },
+  '浙江': {
+    name: '浙江', type: '3+3',
+    tiers: {
+      unified: { benke: 488, tekong: 594 }
+    }
+  },
+  '北京': {
+    name: '北京', type: '3+3',
+    tiers: {
+      unified: { benke: 434, tekong: 523 }
+    }
+  },
+  '上海': {
+    name: '上海', type: '3+3',
+    tiers: {
+      unified: { benke: 403, tekong: 503 }
+    }
+  },
+  '天津': {
+    name: '天津', type: '3+3',
+    tiers: {
+      unified: { benke: 475, tekong: 563 }
+    }
+  },
+  '陕西': {
+    name: '陕西', type: '3+1+2',
+    tiers: {
+      physics: { benke: 402, tekong: 475 },
+      history: { benke: 417, tekong: 488 }
+    }
+  },
+  '山西': {
+    name: '山西', type: '3+1+2',
+    tiers: {
+      physics: { benke: 417, tekong: 506 },
+      history: { benke: 442, tekong: 516 }
+    }
+  },
+  '黑龙江': {
+    name: '黑龙江', type: '3+1+2',
+    tiers: {
+      physics: { benke: 360, tekong: 480 },
+      history: { benke: 380, tekong: 486 }
+    }
+  },
+  '吉林': {
+    name: '吉林', type: '3+1+2',
+    tiers: {
+      physics: { benke: 345, tekong: 483 },
+      history: { benke: 369, tekong: 479 }
+    }
+  },
+};
+
+// ==================== 高校数据 ====================
+// tier: 'c9' | '985' | '211' | '双一流' | '普通'
+// preferred: '物理' | '历史' | '不限' (首选科目要求)
+// additional: [] 再选科目要求 (空数组=不限)
+// offset: 相对于特控线的分数偏移 (正数=高于特控线, 负数=低于特控线)
+const UNIVERSITIES = [
+  {
+    id: 'tsinghua', name: '清华大学', tier: 'c9', city: '北京',
+    groups: [
+      { name: '计算机类（计算机科学与技术、软件工程、人工智能）', preferred: '物理', additional: [], offset: 165 },
+      { name: '电子信息类（电子信息工程、通信工程、微电子）', preferred: '物理', additional: [], offset: 162 },
+      { name: '自动化类（自动化、测控技术与仪器）', preferred: '物理', additional: [], offset: 160 },
+      { name: '机械类（机械工程、车辆工程）', preferred: '物理', additional: [], offset: 158 },
+      { name: '土木类（土木工程、水利科学与工程）', preferred: '物理', additional: [], offset: 155 },
+      { name: '经济管理类（经济与金融、工商管理）', preferred: '不限', additional: [], offset: 157 },
+      { name: '法学', preferred: '不限', additional: ["政治"], offset: 154 },
+      { name: '数理基础科学（数学、物理、统计学）', preferred: '物理', additional: [], offset: 161 },
+      { name: '临床医学（协和医学院）', preferred: '物理', additional: ["化学","生物"], offset: 168 },
+      { name: '能源与电气类（能源与动力工程、电气工程）', preferred: '物理', additional: [], offset: 159 }
+    ]
+  },
+  {
+    id: 'pku', name: '北京大学', tier: 'c9', city: '北京',
+    groups: [
+      { name: '计算机类（计算机科学与技术、智能科学与技术）', preferred: '物理', additional: [], offset: 163 },
+      { name: '电子信息类（电子信息工程、通信工程）', preferred: '物理', additional: [], offset: 160 },
+      { name: '经济学类（经济学、金融学、国际经济与贸易）', preferred: '不限', additional: [], offset: 157 },
+      { name: '工商管理类（工商管理、会计学）', preferred: '不限', additional: [], offset: 155 },
+      { name: '法学', preferred: '不限', additional: ["政治"], offset: 154 },
+      { name: '中国语言文学类', preferred: '历史', additional: [], offset: 149 },
+      { name: '历史学类（历史学、考古学）', preferred: '历史', additional: [], offset: 146 },
+      { name: '哲学类（哲学、逻辑学）', preferred: '不限', additional: [], offset: 145 },
+      { name: '数学类（数学与应用数学、统计学）', preferred: '物理', additional: [], offset: 159 },
+      { name: '临床医学', preferred: '物理', additional: ["化学","生物"], offset: 166 },
+      { name: '化学类（化学、应用化学）', preferred: '物理', additional: ["化学"], offset: 152 }
+    ]
+  },
+  {
+    id: 'fudan', name: '复旦大学', tier: 'c9', city: '上海',
+    groups: [
+      { name: '计算机类（计算机科学与技术、软件工程）', preferred: '物理', additional: [], offset: 148 },
+      { name: '电子信息类（电子信息工程、通信工程）', preferred: '物理', additional: [], offset: 146 },
+      { name: '经济学类（经济学、金融学）', preferred: '不限', additional: [], offset: 145 },
+      { name: '新闻传播学类（新闻学、传播学）', preferred: '不限', additional: [], offset: 142 },
+      { name: '法学', preferred: '不限', additional: ["政治"], offset: 143 },
+      { name: '临床医学（8年制）', preferred: '物理', additional: ["化学","生物"], offset: 153 },
+      { name: '数学类（数学与应用数学、信息与计算科学）', preferred: '物理', additional: [], offset: 147 },
+      { name: '中国语言文学类', preferred: '历史', additional: [], offset: 140 }
+    ]
+  },
+  {
+    id: 'sjtu', name: '上海交通大学', tier: 'c9', city: '上海',
+    groups: [
+      { name: '计算机类（计算机科学与技术、人工智能）', preferred: '物理', additional: [], offset: 150 },
+      { name: '电子信息类（电子信息工程、自动化、微电子）', preferred: '物理', additional: [], offset: 148 },
+      { name: '机械类（机械工程、工业工程）', preferred: '物理', additional: [], offset: 144 },
+      { name: '船舶与海洋工程类', preferred: '物理', additional: [], offset: 141 },
+      { name: '经济管理类（工商管理、金融学）', preferred: '不限', additional: [], offset: 143 },
+      { name: '法学', preferred: '不限', additional: ["政治"], offset: 140 },
+      { name: '临床医学', preferred: '物理', additional: ["化学","生物"], offset: 155 },
+      { name: '材料科学与工程', preferred: '物理', additional: ["化学"], offset: 138 }
+    ]
+  },
+  {
+    id: 'zju', name: '浙江大学', tier: 'c9', city: '杭州',
+    groups: [
+      { name: '计算机类（计算机科学与技术、软件工程）', preferred: '物理', additional: [], offset: 148 },
+      { name: '电子信息类（电子信息工程、光电信息）', preferred: '物理', additional: [], offset: 145 },
+      { name: '机械类（机械工程、能源与环境）', preferred: '物理', additional: [], offset: 142 },
+      { name: '经济管理类（经济学、工商管理）', preferred: '不限', additional: [], offset: 141 },
+      { name: '法学', preferred: '不限', additional: ["政治"], offset: 138 },
+      { name: '医学类（临床医学、口腔医学）', preferred: '物理', additional: ["化学","生物"], offset: 150 },
+      { name: '农学类（农学、植物保护）', preferred: '物理', additional: ["化学","生物"], offset: 130 },
+      { name: '外语类（英语、德语、日语）', preferred: '不限', additional: [], offset: 135 }
+    ]
+  },
+  {
+    id: 'nju', name: '南京大学', tier: 'c9', city: '南京',
+    groups: [
+      { name: '计算机类（计算机科学与技术、人工智能）', preferred: '物理', additional: [], offset: 146 },
+      { name: '电子信息类（电子信息工程、通信工程）', preferred: '物理', additional: [], offset: 143 },
+      { name: '经济管理类（经济学、工商管理）', preferred: '不限', additional: [], offset: 141 },
+      { name: '天文与空间科学类（天文学）', preferred: '物理', additional: [], offset: 140 },
+      { name: '中国语言文学类', preferred: '历史', additional: [], offset: 137 },
+      { name: '法学', preferred: '不限', additional: ["政治"], offset: 138 },
+      { name: '环境科学与工程类', preferred: '物理', additional: ["化学"], offset: 135 }
+    ]
+  },
+  {
+    id: 'hit', name: '哈尔滨工业大学', tier: 'c9', city: '哈尔滨',
+    groups: [
+      { name: '计算机类（计算机科学与技术、信息安全）', preferred: '物理', additional: [], offset: 132 },
+      { name: '电子信息类（通信工程、电子科学与技术）', preferred: '物理', additional: [], offset: 130 },
+      { name: '机械类（机械设计制造及其自动化）', preferred: '物理', additional: [], offset: 127 },
+      { name: '航天与自动化类（航空航天工程、自动化）', preferred: '物理', additional: [], offset: 135 },
+      { name: '土木类（土木工程、给排水）', preferred: '物理', additional: [], offset: 122 },
+      { name: '经济管理类（工商管理、大数据管理）', preferred: '不限', additional: [], offset: 118 },
+      { name: '材料科学与工程', preferred: '物理', additional: ["化学"], offset: 120 }
+    ]
+  },
+  {
+    id: 'xjtlu', name: '西安交通大学', tier: 'c9', city: '西安',
+    groups: [
+      { name: '计算机类（计算机科学与技术、软件工程）', preferred: '物理', additional: [], offset: 130 },
+      { name: '电子信息类（电子科学与技术、微电子）', preferred: '物理', additional: [], offset: 128 },
+      { name: '电气类（电气工程及其自动化）', preferred: '物理', additional: [], offset: 132 },
+      { name: '机械类（机械工程、智能制造）', preferred: '物理', additional: [], offset: 125 },
+      { name: '能源动力类（能源与动力工程、核工程）', preferred: '物理', additional: [], offset: 123 },
+      { name: '经济管理类（经济学、工商管理）', preferred: '不限', additional: [], offset: 118 },
+      { name: '医学类（临床医学）', preferred: '物理', additional: ["化学","生物"], offset: 128 }
+    ]
+  },
+  {
+    id: 'whu', name: '武汉大学', tier: '985', city: '武汉',
+    groups: [
+      { name: '计算机类（计算机科学与技术、人工智能）', preferred: '物理', additional: [], offset: 120 },
+      { name: '电子信息类（电子信息工程、通信工程）', preferred: '物理', additional: [], offset: 118 },
+      { name: '测绘类（测绘工程、遥感科学与技术）', preferred: '物理', additional: [], offset: 115 },
+      { name: '法学', preferred: '不限', additional: ["政治"], offset: 117 },
+      { name: '经济管理类（经济学、工商管理）', preferred: '不限', additional: [], offset: 115 },
+      { name: '医学类（临床医学、口腔医学）', preferred: '物理', additional: ["化学","生物"], offset: 122 },
+      { name: '中国语言文学类', preferred: '历史', additional: [], offset: 110 },
+      { name: '水利水电类', preferred: '物理', additional: [], offset: 112 }
+    ]
+  },
+  {
+    id: 'hust', name: '华中科技大学', tier: '985', city: '武汉',
+    groups: [
+      { name: '计算机类（计算机科学与技术、软件工程）', preferred: '物理', additional: [], offset: 122 },
+      { name: '电子信息类（通信工程、光电信息）', preferred: '物理', additional: [], offset: 120 },
+      { name: '机械类（机械设计制造及其自动化）', preferred: '物理', additional: [], offset: 117 },
+      { name: '电气类（电气工程及其自动化）', preferred: '物理', additional: [], offset: 119 },
+      { name: '医学类（临床医学）', preferred: '物理', additional: ["化学","生物"], offset: 124 },
+      { name: '经济管理类（工商管理、经济学）', preferred: '不限', additional: [], offset: 113 },
+      { name: '新闻传播学类', preferred: '不限', additional: [], offset: 110 }
+    ]
+  },
+  {
+    id: 'sysu', name: '中山大学', tier: '985', city: '广州',
+    groups: [
+      { name: '计算机类（计算机科学与技术、人工智能）', preferred: '物理', additional: [], offset: 115 },
+      { name: '电子信息类（电子信息工程、通信工程）', preferred: '物理', additional: [], offset: 113 },
+      { name: '医学类（临床医学、口腔医学）', preferred: '物理', additional: ["化学","生物"], offset: 120 },
+      { name: '经济管理类（经济学、工商管理）', preferred: '不限', additional: [], offset: 112 },
+      { name: '法学', preferred: '不限', additional: ["政治"], offset: 110 },
+      { name: '中国语言文学类', preferred: '历史', additional: [], offset: 107 },
+      { name: '海洋科学类', preferred: '物理', additional: [], offset: 105 }
+    ]
+  },
+  {
+    id: 'tongji', name: '同济大学', tier: '985', city: '上海',
+    groups: [
+      { name: '计算机类（计算机科学与技术、软件工程）', preferred: '物理', additional: [], offset: 118 },
+      { name: '土木建筑类（土木工程、建筑学）', preferred: '物理', additional: [], offset: 116 },
+      { name: '交通类（交通工程、车辆工程）', preferred: '物理', additional: [], offset: 114 },
+      { name: '电子信息类（电子信息工程、自动化）', preferred: '物理', additional: [], offset: 115 },
+      { name: '经济管理类（工商管理、经济学）', preferred: '不限', additional: [], offset: 108 },
+      { name: '外语类（德语、英语）', preferred: '不限', additional: [], offset: 103 }
+    ]
+  },
+  {
+    id: 'nankai', name: '南开大学', tier: '985', city: '天津',
+    groups: [
+      { name: '计算机类（计算机科学与技术）', preferred: '物理', additional: [], offset: 112 },
+      { name: '电子信息类（电子信息工程、通信工程）', preferred: '物理', additional: [], offset: 110 },
+      { name: '经济管理类（经济学、工商管理）', preferred: '不限', additional: [], offset: 115 },
+      { name: '数学类（数学与应用数学、统计学）', preferred: '物理', additional: [], offset: 114 },
+      { name: '化学类（化学、应用化学）', preferred: '物理', additional: ["化学"], offset: 108 },
+      { name: '中国语言文学类', preferred: '历史', additional: [], offset: 105 },
+      { name: '法学', preferred: '不限', additional: ["政治"], offset: 107 }
+    ]
+  },
+  {
+    id: 'beihang', name: '北京航空航天大学', tier: '985', city: '北京',
+    groups: [
+      { name: '计算机类（计算机科学与技术、软件工程）', preferred: '物理', additional: [], offset: 125 },
+      { name: '电子信息类（电子信息工程、通信工程）', preferred: '物理', additional: [], offset: 123 },
+      { name: '航空航天类（飞行器设计与工程、飞行器动力）', preferred: '物理', additional: [], offset: 122 },
+      { name: '自动化类（自动化、测控技术与仪器）', preferred: '物理', additional: [], offset: 120 },
+      { name: '经济管理类（工商管理、经济学）', preferred: '不限', additional: [], offset: 112 },
+      { name: '外语类（英语、德语）', preferred: '不限', additional: [], offset: 105 }
+    ]
+  },
+  {
+    id: 'bit', name: '北京理工大学', tier: '985', city: '北京',
+    groups: [
+      { name: '计算机类（计算机科学与技术、人工智能）', preferred: '物理', additional: [], offset: 118 },
+      { name: '电子信息类（电子信息工程、通信工程）', preferred: '物理', additional: [], offset: 116 },
+      { name: '机械类（车辆工程、装甲车辆工程）', preferred: '物理', additional: [], offset: 113 },
+      { name: '自动化类（自动化、电气工程）', preferred: '物理', additional: [], offset: 114 },
+      { name: '经济管理类（工商管理、经济学）', preferred: '不限', additional: [], offset: 108 }
+    ]
+  },
+  {
+    id: 'seu', name: '东南大学', tier: '985', city: '南京',
+    groups: [
+      { name: '计算机类（计算机科学与技术、软件工程）', preferred: '物理', additional: [], offset: 116 },
+      { name: '电子信息类（信息工程、电子科学与技术）', preferred: '物理', additional: [], offset: 114 },
+      { name: '土木建筑类（建筑学、土木工程）', preferred: '物理', additional: [], offset: 113 },
+      { name: '交通类（交通工程、交通运输）', preferred: '物理', additional: [], offset: 111 },
+      { name: '医学类（临床医学）', preferred: '物理', additional: ["化学","生物"], offset: 110 }
+    ]
+  },
+  {
+    id: 'tju', name: '天津大学', tier: '985', city: '天津',
+    groups: [
+      { name: '计算机类（计算机科学与技术、软件工程）', preferred: '物理', additional: [], offset: 112 },
+      { name: '电子信息类（电子信息工程、通信工程）', preferred: '物理', additional: [], offset: 110 },
+      { name: '化工与材料类（化学工程与工艺、材料）', preferred: '物理', additional: ["化学"], offset: 106 },
+      { name: '土木建筑类（建筑学、土木工程）', preferred: '物理', additional: [], offset: 108 },
+      { name: '机械类（机械设计制造及其自动化）', preferred: '物理', additional: [], offset: 107 }
+    ]
+  },
+  {
+    id: 'xmu', name: '厦门大学', tier: '985', city: '厦门',
+    groups: [
+      { name: '计算机类（计算机科学与技术）', preferred: '物理', additional: [], offset: 108 },
+      { name: '电子信息类（电子信息工程）', preferred: '物理', additional: [], offset: 106 },
+      { name: '经济管理类（经济学、会计学、工商管理）', preferred: '不限', additional: [], offset: 110 },
+      { name: '法学', preferred: '不限', additional: ["政治"], offset: 105 },
+      { name: '海洋科学类', preferred: '物理', additional: [], offset: 100 },
+      { name: '外语类（英语、日语）', preferred: '不限', additional: [], offset: 102 }
+    ]
+  },
+  {
+    id: 'scu', name: '四川大学', tier: '985', city: '成都',
+    groups: [
+      { name: '计算机类（计算机科学与技术）', preferred: '物理', additional: [], offset: 102 },
+      { name: '电子信息类（电子信息工程）', preferred: '物理', additional: [], offset: 100 },
+      { name: '医学类（临床医学、口腔医学）', preferred: '物理', additional: ["化学","生物"], offset: 112 },
+      { name: '经济管理类（经济学、工商管理）', preferred: '不限', additional: [], offset: 98 },
+      { name: '化学与材料类', preferred: '物理', additional: ["化学"], offset: 95 },
+      { name: '中国语言文学类', preferred: '历史', additional: [], offset: 93 },
+      { name: '法学', preferred: '不限', additional: ["政治"], offset: 96 }
+    ]
+  },
+  {
+    id: 'sdu', name: '山东大学', tier: '985', city: '济南',
+    groups: [
+      { name: '计算机类（计算机科学与技术）', preferred: '物理', additional: [], offset: 100 },
+      { name: '电子信息类（电子信息工程、通信工程）', preferred: '物理', additional: [], offset: 98 },
+      { name: '医学类（临床医学）', preferred: '物理', additional: ["化学","生物"], offset: 105 },
+      { name: '经济管理类（经济学、工商管理）', preferred: '不限', additional: [], offset: 95 },
+      { name: '数学类（数学与应用数学）', preferred: '物理', additional: [], offset: 97 },
+      { name: '中国语言文学类', preferred: '历史', additional: [], offset: 90 }
+    ]
+  },
+  {
+    id: 'jlu', name: '吉林大学', tier: '985', city: '长春',
+    groups: [
+      { name: '计算机类（计算机科学与技术）', preferred: '物理', additional: [], offset: 92 },
+      { name: '电子信息类（电子信息工程）', preferred: '物理', additional: [], offset: 90 },
+      { name: '机械类（车辆工程、机械工程）', preferred: '物理', additional: [], offset: 88 },
+      { name: '医学类（临床医学）', preferred: '物理', additional: ["化学","生物"], offset: 95 },
+      { name: '法学', preferred: '不限', additional: ["政治"], offset: 90 },
+      { name: '经济管理类（经济学、工商管理）', preferred: '不限', additional: [], offset: 85 }
+    ]
+  },
+  {
+    id: 'csu', name: '中南大学', tier: '985', city: '长沙',
+    groups: [
+      { name: '计算机类（计算机科学与技术）', preferred: '物理', additional: [], offset: 95 },
+      { name: '电子信息类（电子信息工程）', preferred: '物理', additional: [], offset: 93 },
+      { name: '医学类（临床医学）', preferred: '物理', additional: ["化学","生物"], offset: 100 },
+      { name: '土木类（土木工程、铁道工程）', preferred: '物理', additional: [], offset: 88 },
+      { name: '材料类（材料科学与工程）', preferred: '物理', additional: ["化学"], offset: 85 },
+      { name: '经济管理类（工商管理）', preferred: '不限', additional: [], offset: 82 }
+    ]
+  },
+  {
+    id: 'hnu', name: '湖南大学', tier: '985', city: '长沙',
+    groups: [
+      { name: '计算机类（计算机科学与技术）', preferred: '物理', additional: [], offset: 90 },
+      { name: '电子信息类（电子信息工程）', preferred: '物理', additional: [], offset: 88 },
+      { name: '土木建筑类（土木工程、建筑学）', preferred: '物理', additional: [], offset: 87 },
+      { name: '经济管理类（工商管理、经济学）', preferred: '不限', additional: [], offset: 85 },
+      { name: '外语类（英语、日语）', preferred: '不限', additional: [], offset: 80 }
+    ]
+  },
+  {
+    id: 'cqu', name: '重庆大学', tier: '985', city: '重庆',
+    groups: [
+      { name: '计算机类（计算机科学与技术）', preferred: '物理', additional: [], offset: 88 },
+      { name: '电子信息类（电子信息工程）', preferred: '物理', additional: [], offset: 86 },
+      { name: '土木建筑类（土木工程、建筑学）', preferred: '物理', additional: [], offset: 85 },
+      { name: '机械类（机械设计制造及其自动化）', preferred: '物理', additional: [], offset: 84 },
+      { name: '经济管理类（工商管理）', preferred: '不限', additional: [], offset: 80 }
+    ]
+  },
+  {
+    id: 'uestc', name: '电子科技大学', tier: '985', city: '成都',
+    groups: [
+      { name: '计算机类（计算机科学与技术、软件工程）', preferred: '物理', additional: [], offset: 105 },
+      { name: '电子信息类（电子信息工程、通信工程）', preferred: '物理', additional: [], offset: 103 },
+      { name: '集成电路与微电子类', preferred: '物理', additional: [], offset: 102 },
+      { name: '自动化类（自动化、测控）', preferred: '物理', additional: [], offset: 98 },
+      { name: '经济管理类（工商管理）', preferred: '不限', additional: [], offset: 88 }
+    ]
+  },
+  {
+    id: 'nwpu', name: '西北工业大学', tier: '985', city: '西安',
+    groups: [
+      { name: '计算机类（计算机科学与技术）', preferred: '物理', additional: [], offset: 100 },
+      { name: '电子信息类（电子信息工程）', preferred: '物理', additional: [], offset: 98 },
+      { name: '航空航天类（飞行器设计与工程）', preferred: '物理', additional: [], offset: 102 },
+      { name: '航海类（船舶与海洋工程）', preferred: '物理', additional: [], offset: 92 },
+      { name: '材料类（材料科学与工程）', preferred: '物理', additional: ["化学"], offset: 90 },
+      { name: '经济管理类（工商管理）', preferred: '不限', additional: [], offset: 82 }
+    ]
+  },
+  {
+    id: 'lzu', name: '兰州大学', tier: '985', city: '兰州',
+    groups: [
+      { name: '计算机类（计算机科学与技术）', preferred: '物理', additional: [], offset: 78 },
+      { name: '电子信息类（电子信息工程）', preferred: '物理', additional: [], offset: 76 },
+      { name: '医学类（临床医学）', preferred: '物理', additional: ["化学","生物"], offset: 82 },
+      { name: '化学类（化学、应用化学）', preferred: '物理', additional: ["化学"], offset: 75 },
+      { name: '经济管理类（经济学、工商管理）', preferred: '不限', additional: [], offset: 72 },
+      { name: '中国语言文学类', preferred: '历史', additional: [], offset: 68 }
+    ]
+  },
+  {
+    id: 'cau', name: '中国农业大学', tier: '985', city: '北京',
+    groups: [
+      { name: '计算机类（计算机科学与技术）', preferred: '物理', additional: [], offset: 95 },
+      { name: '电子信息类（电子信息工程）', preferred: '物理', additional: [], offset: 93 },
+      { name: '食品科学与工程类', preferred: '物理', additional: ["化学"], offset: 88 },
+      { name: '农学类（农学、植物保护）', preferred: '物理', additional: ["化学","生物"], offset: 85 },
+      { name: '经济管理类（工商管理）', preferred: '不限', additional: [], offset: 90 },
+      { name: '动物医学', preferred: '物理', additional: ["化学","生物"], offset: 82 }
+    ]
+  },
+  {
+    id: 'bnu', name: '北京师范大学', tier: '985', city: '北京',
+    groups: [
+      { name: '计算机类（计算机科学与技术）', preferred: '物理', additional: [], offset: 98 },
+      { name: '数学类（数学与应用数学、统计学）', preferred: '物理', additional: [], offset: 100 },
+      { name: '教育类（教育学、心理学）', preferred: '不限', additional: [], offset: 95 },
+      { name: '中国语言文学类', preferred: '历史', additional: [], offset: 93 },
+      { name: '历史学类', preferred: '历史', additional: [], offset: 90 },
+      { name: '经济管理类（经济学）', preferred: '不限', additional: [], offset: 92 }
+    ]
+  },
+  {
+    id: 'ecnu', name: '华东师范大学', tier: '985', city: '上海',
+    groups: [
+      { name: '计算机类（计算机科学与技术）', preferred: '物理', additional: [], offset: 96 },
+      { name: '电子信息类（电子信息工程）', preferred: '物理', additional: [], offset: 94 },
+      { name: '教育类（教育学、心理学）', preferred: '不限', additional: [], offset: 93 },
+      { name: '中国语言文学类', preferred: '历史', additional: [], offset: 90 },
+      { name: '外语类（英语、法语、日语）', preferred: '不限', additional: [], offset: 88 },
+      { name: '地理科学类', preferred: '不限', additional: ["地理"], offset: 85 }
+    ]
+  },
+  {
+    id: 'neu', name: '东北大学', tier: '985', city: '沈阳',
+    groups: [
+      { name: '计算机类（计算机科学与技术）', preferred: '物理', additional: [], offset: 88 },
+      { name: '电子信息类（电子信息工程）', preferred: '物理', additional: [], offset: 86 },
+      { name: '自动化类（自动化、机器人工程）', preferred: '物理', additional: [], offset: 87 },
+      { name: '机械类（机械工程）', preferred: '物理', additional: [], offset: 85 },
+      { name: '经济管理类（工商管理）', preferred: '不限', additional: [], offset: 78 }
+    ]
+  },
+  {
+    id: 'dlut', name: '大连理工大学', tier: '985', city: '大连',
+    groups: [
+      { name: '计算机类（计算机科学与技术）', preferred: '物理', additional: [], offset: 90 },
+      { name: '电子信息类（电子信息工程）', preferred: '物理', additional: [], offset: 88 },
+      { name: '化工类（化学工程与工艺）', preferred: '物理', additional: ["化学"], offset: 85 },
+      { name: '机械类（机械设计制造及其自动化）', preferred: '物理', additional: [], offset: 86 },
+      { name: '经济管理类（工商管理）', preferred: '不限', additional: [], offset: 80 }
+    ]
+  },
+  {
+    id: 'ouc', name: '中国海洋大学', tier: '985', city: '青岛',
+    groups: [
+      { name: '计算机类（计算机科学与技术）', preferred: '物理', additional: [], offset: 85 },
+      { name: '电子信息类（电子信息工程）', preferred: '物理', additional: [], offset: 83 },
+      { name: '海洋科学类（海洋科学、海洋技术）', preferred: '物理', additional: [], offset: 82 },
+      { name: '水产类（水产养殖学）', preferred: '物理', additional: ["化学","生物"], offset: 75 },
+      { name: '经济管理类（工商管理）', preferred: '不限', additional: [], offset: 78 },
+      { name: '外语类（英语、日语）', preferred: '不限', additional: [], offset: 74 }
+    ]
+  },
+  {
+    id: 'bupt', name: '北京邮电大学', tier: '211', city: '北京',
+    groups: [
+      { name: '计算机类（计算机科学与技术、网络工程）', preferred: '物理', additional: [], offset: 102 },
+      { name: '电子信息类（通信工程、电子信息工程）', preferred: '物理', additional: [], offset: 100 },
+      { name: '人工智能', preferred: '物理', additional: [], offset: 101 },
+      { name: '自动化类（自动化、测控技术）', preferred: '物理', additional: [], offset: 93 },
+      { name: '经济管理类（工商管理）', preferred: '不限', additional: [], offset: 82 }
+    ]
+  },
+  {
+    id: 'xidian', name: '西安电子科技大学', tier: '211', city: '西安',
+    groups: [
+      { name: '计算机类（计算机科学与技术、软件工程）', preferred: '物理', additional: [], offset: 95 },
+      { name: '电子信息类（通信工程、电子信息工程）', preferred: '物理', additional: [], offset: 93 },
+      { name: '微电子科学与工程', preferred: '物理', additional: [], offset: 92 },
+      { name: '自动化类', preferred: '物理', additional: [], offset: 88 },
+      { name: '经济管理类（工商管理）', preferred: '不限', additional: [], offset: 76 }
+    ]
+  },
+  {
+    id: 'shufe', name: '上海财经大学', tier: '211', city: '上海',
+    groups: [
+      { name: '经济学类（经济学、金融学）', preferred: '不限', additional: [], offset: 105 },
+      { name: '工商管理类（会计学、财务管理）', preferred: '不限', additional: [], offset: 103 },
+      { name: '统计学类', preferred: '物理', additional: [], offset: 100 },
+      { name: '法学', preferred: '不限', additional: ["政治"], offset: 95 },
+      { name: '计算机类（计算机科学与技术）', preferred: '物理', additional: [], offset: 92 }
+    ]
+  },
+  {
+    id: 'cufe', name: '中央财经大学', tier: '211', city: '北京',
+    groups: [
+      { name: '经济学类（经济学、金融学）', preferred: '不限', additional: [], offset: 102 },
+      { name: '工商管理类（会计学、财务管理）', preferred: '不限', additional: [], offset: 100 },
+      { name: '法学', preferred: '不限', additional: ["政治"], offset: 92 },
+      { name: '统计学类', preferred: '物理', additional: [], offset: 96 },
+      { name: '计算机类（计算机科学与技术）', preferred: '物理', additional: [], offset: 88 }
+    ]
+  },
+  {
+    id: 'uibe', name: '对外经济贸易大学', tier: '211', city: '北京',
+    groups: [
+      { name: '经济学类（国际经济与贸易、金融学）', preferred: '不限', additional: [], offset: 98 },
+      { name: '工商管理类（会计学、工商管理）', preferred: '不限', additional: [], offset: 96 },
+      { name: '法学', preferred: '不限', additional: ["政治"], offset: 93 },
+      { name: '外语类（英语、商务英语）', preferred: '不限', additional: [], offset: 88 },
+      { name: '计算机类（计算机科学与技术）', preferred: '物理', additional: [], offset: 85 }
+    ]
+  },
+  {
+    id: 'nuaa', name: '南京航空航天大学', tier: '211', city: '南京',
+    groups: [
+      { name: '计算机类（计算机科学与技术）', preferred: '物理', additional: [], offset: 92 },
+      { name: '电子信息类（电子信息工程、通信工程）', preferred: '物理', additional: [], offset: 90 },
+      { name: '航空航天类（飞行器设计与工程）', preferred: '物理', additional: [], offset: 93 },
+      { name: '自动化类（自动化）', preferred: '物理', additional: [], offset: 88 },
+      { name: '经济管理类（工商管理）', preferred: '不限', additional: [], offset: 78 }
+    ]
+  },
+  {
+    id: 'njust', name: '南京理工大学', tier: '211', city: '南京',
+    groups: [
+      { name: '计算机类（计算机科学与技术）', preferred: '物理', additional: [], offset: 90 },
+      { name: '电子信息类（电子信息工程、通信工程）', preferred: '物理', additional: [], offset: 88 },
+      { name: '兵器类（武器系统与工程）', preferred: '物理', additional: [], offset: 85 },
+      { name: '化工类（化学工程与工艺）', preferred: '物理', additional: ["化学"], offset: 80 },
+      { name: '经济管理类（工商管理）', preferred: '不限', additional: [], offset: 76 }
+    ]
+  },
+  {
+    id: 'whut', name: '武汉理工大学', tier: '211', city: '武汉',
+    groups: [
+      { name: '计算机类（计算机科学与技术）', preferred: '物理', additional: [], offset: 85 },
+      { name: '电子信息类（电子信息工程）', preferred: '物理', additional: [], offset: 83 },
+      { name: '交通类（交通工程、航海技术）', preferred: '物理', additional: [], offset: 82 },
+      { name: '材料类（材料科学与工程）', preferred: '物理', additional: ["化学"], offset: 80 },
+      { name: '经济管理类（工商管理）', preferred: '不限', additional: [], offset: 75 }
+    ]
+  },
+  {
+    id: 'swjtu', name: '西南交通大学', tier: '211', city: '成都',
+    groups: [
+      { name: '计算机类（计算机科学与技术）', preferred: '物理', additional: [], offset: 83 },
+      { name: '电子信息类（通信工程）', preferred: '物理', additional: [], offset: 81 },
+      { name: '交通类（交通运输、交通工程）', preferred: '物理', additional: [], offset: 82 },
+      { name: '土木类（土木工程、铁道工程）', preferred: '物理', additional: [], offset: 78 },
+      { name: '经济管理类（工商管理）', preferred: '不限', additional: [], offset: 72 }
+    ]
+  },
+  {
+    id: 'bjtu', name: '北京交通大学', tier: '211', city: '北京',
+    groups: [
+      { name: '计算机类（计算机科学与技术）', preferred: '物理', additional: [], offset: 90 },
+      { name: '电子信息类（通信工程）', preferred: '物理', additional: [], offset: 88 },
+      { name: '交通类（交通运输、交通工程）', preferred: '物理', additional: [], offset: 87 },
+      { name: '经济管理类（工商管理）', preferred: '不限', additional: [], offset: 80 }
+    ]
+  },
+  {
+    id: 'ecust', name: '华东理工大学', tier: '211', city: '上海',
+    groups: [
+      { name: '计算机类（计算机科学与技术）', preferred: '物理', additional: [], offset: 88 },
+      { name: '电子信息类（电子信息工程）', preferred: '物理', additional: [], offset: 86 },
+      { name: '化工类（化学工程与工艺）', preferred: '物理', additional: ["化学"], offset: 84 },
+      { name: '经济管理类（工商管理）', preferred: '不限', additional: [], offset: 80 }
+    ]
+  },
+  {
+    id: 'shu', name: '上海大学', tier: '211', city: '上海',
+    groups: [
+      { name: '计算机类（计算机科学与技术）', preferred: '物理', additional: [], offset: 83 },
+      { name: '电子信息类（电子信息工程、通信工程）', preferred: '物理', additional: [], offset: 81 },
+      { name: '机械类（机械工程）', preferred: '物理', additional: [], offset: 78 },
+      { name: '经济管理类（工商管理）', preferred: '不限', additional: [], offset: 77 },
+      { name: '外语类（英语、日语）', preferred: '不限', additional: [], offset: 72 }
+    ]
+  },
+  {
+    id: 'suda', name: '苏州大学', tier: '211', city: '苏州',
+    groups: [
+      { name: '计算机类（计算机科学与技术）', preferred: '物理', additional: [], offset: 82 },
+      { name: '电子信息类（电子信息工程）', preferred: '物理', additional: [], offset: 80 },
+      { name: '医学类（临床医学）', preferred: '物理', additional: ["化学","生物"], offset: 85 },
+      { name: '经济管理类（工商管理）', preferred: '不限', additional: [], offset: 78 },
+      { name: '法学', preferred: '不限', additional: ["政治"], offset: 76 }
+    ]
+  },
+  {
+    id: 'jnu', name: '暨南大学', tier: '211', city: '广州',
+    groups: [
+      { name: '计算机类（计算机科学与技术）', preferred: '物理', additional: [], offset: 80 },
+      { name: '电子信息类（电子信息工程）', preferred: '物理', additional: [], offset: 78 },
+      { name: '新闻传播学类', preferred: '不限', additional: [], offset: 77 },
+      { name: '经济管理类（经济学、工商管理）', preferred: '不限', additional: [], offset: 79 },
+      { name: '医学类（临床医学）', preferred: '物理', additional: ["化学","生物"], offset: 83 }
+    ]
+  },
+  {
+    id: 'hfuut', name: '合肥工业大学', tier: '211', city: '合肥',
+    groups: [
+      { name: '计算机类（计算机科学与技术）', preferred: '物理', additional: [], offset: 78 },
+      { name: '电子信息类（电子信息工程）', preferred: '物理', additional: [], offset: 76 },
+      { name: '机械类（机械设计制造及其自动化）', preferred: '物理', additional: [], offset: 75 },
+      { name: '经济管理类（工商管理）', preferred: '不限', additional: [], offset: 70 }
+    ]
+  },
+  {
+    id: 'fzu', name: '福州大学', tier: '211', city: '福州',
+    groups: [
+      { name: '计算机类（计算机科学与技术）', preferred: '物理', additional: [], offset: 75 },
+      { name: '电子信息类（电子信息工程）', preferred: '物理', additional: [], offset: 73 },
+      { name: '化工类（化学工程与工艺）', preferred: '物理', additional: ["化学"], offset: 70 },
+      { name: '经济管理类（工商管理）', preferred: '不限', additional: [], offset: 68 }
+    ]
+  },
+  {
+    id: 'ncu', name: '南昌大学', tier: '211', city: '南昌',
+    groups: [
+      { name: '计算机类（计算机科学与技术）', preferred: '物理', additional: [], offset: 72 },
+      { name: '电子信息类（电子信息工程）', preferred: '物理', additional: [], offset: 70 },
+      { name: '医学类（临床医学）', preferred: '物理', additional: ["化学","生物"], offset: 76 },
+      { name: '经济管理类（工商管理）', preferred: '不限', additional: [], offset: 65 }
+    ]
+  },
+  {
+    id: 'zzu', name: '郑州大学', tier: '211', city: '郑州',
+    groups: [
+      { name: '计算机类（计算机科学与技术）', preferred: '物理', additional: [], offset: 68 },
+      { name: '电子信息类（电子信息工程）', preferred: '物理', additional: [], offset: 66 },
+      { name: '医学类（临床医学）', preferred: '物理', additional: ["化学","生物"], offset: 74 },
+      { name: '经济管理类（工商管理）', preferred: '不限', additional: [], offset: 62 },
+      { name: '法学', preferred: '不限', additional: ["政治"], offset: 60 }
+    ]
+  },
+  {
+    id: 'ynu', name: '云南大学', tier: '双一流', city: '昆明',
+    groups: [
+      { name: '计算机类（计算机科学与技术）', preferred: '物理', additional: [], offset: 58 },
+      { name: '电子信息类（通信工程）', preferred: '物理', additional: [], offset: 56 },
+      { name: '生态学类（生态学、环境科学）', preferred: '物理', additional: ["化学","生物"], offset: 52 },
+      { name: '经济管理类（工商管理）', preferred: '不限', additional: [], offset: 50 }
+    ]
+  },
+  {
+    id: 'gxu', name: '广西大学', tier: '211', city: '南宁',
+    groups: [
+      { name: '计算机类（计算机科学与技术）', preferred: '物理', additional: [], offset: 55 },
+      { name: '电子信息类（电子信息工程）', preferred: '物理', additional: [], offset: 53 },
+      { name: '农林类（农学、林学）', preferred: '物理', additional: ["化学","生物"], offset: 45 },
+      { name: '经济管理类（工商管理）', preferred: '不限', additional: [], offset: 46 }
+    ]
+  },
+  {
+    id: 'gzu', name: '贵州大学', tier: '211', city: '贵阳',
+    groups: [
+      { name: '计算机类（计算机科学与技术）', preferred: '物理', additional: [], offset: 50 },
+      { name: '电子信息类（电子信息工程）', preferred: '物理', additional: [], offset: 48 },
+      { name: '农林类（农学）', preferred: '物理', additional: ["化学","生物"], offset: 40 },
+      { name: '经济管理类（工商管理）', preferred: '不限', additional: [], offset: 42 }
+    ]
+  },
+  {
+    id: 'haerbin_eng', name: '哈尔滨工程大学', tier: '211', city: '哈尔滨',
+    groups: [
+      { name: '计算机类（计算机科学与技术）', preferred: '物理', additional: [], offset: 80 },
+      { name: '电子信息类（通信工程、水声工程）', preferred: '物理', additional: [], offset: 78 },
+      { name: '船舶与海洋工程类', preferred: '物理', additional: [], offset: 77 },
+      { name: '自动化类（自动化）', preferred: '物理', additional: [], offset: 75 },
+      { name: '经济管理类（工商管理）', preferred: '不限', additional: [], offset: 65 }
+    ]
+  },
+  {
+    id: 'szu', name: '深圳大学', tier: '双一流', city: '深圳',
+    groups: [
+      { name: '计算机类（计算机科学与技术、软件工程）', preferred: '物理', additional: [], offset: 78 },
+      { name: '电子信息类（电子信息工程、通信工程）', preferred: '物理', additional: [], offset: 76 },
+      { name: '建筑类（建筑学）', preferred: '物理', additional: [], offset: 72 },
+      { name: '经济管理类（经济学、工商管理）', preferred: '不限', additional: [], offset: 70 },
+      { name: '法学', preferred: '不限', additional: ["政治"], offset: 68 }
+    ]
+  },
+  {
+    id: 'gdut', name: '广东工业大学', tier: '普通', city: '广州',
+    groups: [
+      { name: '计算机类（计算机科学与技术）', preferred: '物理', additional: [], offset: 55 },
+      { name: '电子信息类（电子信息工程）', preferred: '物理', additional: [], offset: 53 },
+      { name: '自动化类（自动化、机器人工程）', preferred: '物理', additional: [], offset: 52 },
+      { name: '经济管理类（工商管理）', preferred: '不限', additional: [], offset: 42 },
+      { name: '外语类（英语、日语）', preferred: '不限', additional: [], offset: 35 }
+    ]
+  },
+  {
+    id: 'scnu', name: '华南师范大学', tier: '211', city: '广州',
+    groups: [
+      { name: '计算机类（计算机科学与技术）', preferred: '物理', additional: [], offset: 72 },
+      { name: '电子信息类（电子信息工程）', preferred: '物理', additional: [], offset: 70 },
+      { name: '教育类（教育学、心理学）', preferred: '不限', additional: [], offset: 68 },
+      { name: '中国语言文学类', preferred: '历史', additional: [], offset: 65 }
+    ]
+  },
+  {
+    id: 'gd_med', name: '南方医科大学', tier: '普通', city: '广州',
+    groups: [
+      { name: '临床医学', preferred: '物理', additional: ["化学","生物"], offset: 70 },
+      { name: '口腔医学', preferred: '物理', additional: ["化学","生物"], offset: 68 },
+      { name: '预防医学', preferred: '物理', additional: ["化学","生物"], offset: 60 },
+      { name: '医学技术类', preferred: '物理', additional: ["化学"], offset: 55 }
+    ]
+  },
+  {
+    id: 'hunnu', name: '湖南师范大学', tier: '211', city: '长沙',
+    groups: [
+      { name: '计算机类（计算机科学与技术）', preferred: '物理', additional: [], offset: 62 },
+      { name: '教育类（教育学）', preferred: '不限', additional: [], offset: 58 },
+      { name: '中国语言文学类', preferred: '历史', additional: [], offset: 56 },
+      { name: '经济管理类（工商管理）', preferred: '不限', additional: [], offset: 52 }
+    ]
+  },
+  {
+    id: 'hebut', name: '河北工业大学', tier: '211', city: '天津',
+    groups: [
+      { name: '计算机类（计算机科学与技术）', preferred: '物理', additional: [], offset: 68 },
+      { name: '电子信息类（电子信息工程）', preferred: '物理', additional: [], offset: 66 },
+      { name: '机械类（机械设计制造及其自动化）', preferred: '物理', additional: [], offset: 64 },
+      { name: '经济管理类（工商管理）', preferred: '不限', additional: [], offset: 56 }
+    ]
+  },
+  {
+    id: 'ahust', name: '安徽大学', tier: '211', city: '合肥',
+    groups: [
+      { name: '计算机类（计算机科学与技术）', preferred: '物理', additional: [], offset: 66 },
+      { name: '电子信息类（电子信息工程）', preferred: '物理', additional: [], offset: 64 },
+      { name: '中国语言文学类', preferred: '历史', additional: [], offset: 56 },
+      { name: '经济管理类（工商管理）', preferred: '不限', additional: [], offset: 54 }
+    ]
+  },
+  {
+    id: 'tyut', name: '太原理工大学', tier: '211', city: '太原',
+    groups: [
+      { name: '计算机类（计算机科学与技术）', preferred: '物理', additional: [], offset: 62 },
+      { name: '电子信息类（电子信息工程）', preferred: '物理', additional: [], offset: 60 },
+      { name: '机械类（机械设计制造及其自动化）', preferred: '物理', additional: [], offset: 58 },
+      { name: '矿业类（采矿工程、安全工程）', preferred: '物理', additional: [], offset: 50 },
+      { name: '经济管理类（工商管理）', preferred: '不限', additional: [], offset: 48 }
+    ]
+  },
+  {
+    id: 'hebau', name: '东北农业大学', tier: '211', city: '哈尔滨',
+    groups: [
+      { name: '计算机类（计算机科学与技术）', preferred: '物理', additional: [], offset: 48 },
+      { name: '食品科学与工程类', preferred: '物理', additional: ["化学"], offset: 45 },
+      { name: '农林类（农学、植物保护）', preferred: '物理', additional: ["化学","生物"], offset: 38 },
+      { name: '经济管理类（工商管理）', preferred: '不限', additional: [], offset: 35 }
+    ]
+  },
+  {
+    id: 'hbut', name: '湖北工业大学', tier: '普通', city: '武汉',
+    groups: [
+      { name: '计算机类（计算机科学与技术）', preferred: '物理', additional: [], offset: 38 },
+      { name: '电子信息类（电子信息工程）', preferred: '物理', additional: [], offset: 36 },
+      { name: '机械类（机械设计制造及其自动化）', preferred: '物理', additional: [], offset: 35 },
+      { name: '经济管理类（工商管理）', preferred: '不限', additional: [], offset: 28 },
+      { name: '外语类（英语）', preferred: '不限', additional: [], offset: 22 }
+    ]
+  },
+  {
+    id: 'cslg', name: '长沙理工大学', tier: '普通', city: '长沙',
+    groups: [
+      { name: '计算机类（计算机科学与技术）', preferred: '物理', additional: [], offset: 42 },
+      { name: '电子信息类（通信工程）', preferred: '物理', additional: [], offset: 40 },
+      { name: '交通类（交通工程）', preferred: '物理', additional: [], offset: 38 },
+      { name: '经济管理类（工商管理）', preferred: '不限', additional: [], offset: 30 }
+    ]
+  },
+  {
+    id: 'cqut', name: '重庆邮电大学', tier: '普通', city: '重庆',
+    groups: [
+      { name: '计算机类（计算机科学与技术）', preferred: '物理', additional: [], offset: 45 },
+      { name: '电子信息类（通信工程）', preferred: '物理', additional: [], offset: 43 },
+      { name: '自动化类（自动化）', preferred: '物理', additional: [], offset: 40 },
+      { name: '经济管理类（工商管理）', preferred: '不限', additional: [], offset: 32 }
+    ]
+  },
+  {
+    id: 'xaut', name: '西安理工大学', tier: '普通', city: '西安',
+    groups: [
+      { name: '计算机类（计算机科学与技术）', preferred: '物理', additional: [], offset: 35 },
+      { name: '电子信息类（电子信息工程）', preferred: '物理', additional: [], offset: 33 },
+      { name: '水利水电类', preferred: '物理', additional: [], offset: 32 },
+      { name: '经济管理类（工商管理）', preferred: '不限', additional: [], offset: 25 }
+    ]
+  },
+  {
+    id: 'qdu', name: '青岛大学', tier: '普通', city: '青岛',
+    groups: [
+      { name: '计算机类（计算机科学与技术）', preferred: '物理', additional: [], offset: 38 },
+      { name: '电子信息类（电子信息工程）', preferred: '物理', additional: [], offset: 36 },
+      { name: '医学类（临床医学）', preferred: '物理', additional: ["化学","生物"], offset: 48 },
+      { name: '经济管理类（工商管理）', preferred: '不限', additional: [], offset: 30 }
+    ]
+  },
+  {
+    id: 'ahstc', name: '安徽理工大学', tier: '普通', city: '淮南',
+    groups: [
+      { name: '计算机类（计算机科学与技术）', preferred: '物理', additional: [], offset: 8 },
+      { name: '电子信息类（电子信息工程）', preferred: '物理', additional: [], offset: 6 },
+      { name: '矿业类（采矿工程）', preferred: '物理', additional: [], offset: 1 },
+      { name: '经济管理类（工商管理）', preferred: '不限', additional: [], offset: -5 }
+    ]
+  },
+  {
+    id: 'hbust', name: '河北科技大学', tier: '普通', city: '石家庄',
+    groups: [
+      { name: '计算机类（计算机科学与技术）', preferred: '物理', additional: [], offset: 4 },
+      { name: '电子信息类（通信工程）', preferred: '物理', additional: [], offset: 2 },
+      { name: '化工类（化学工程与工艺）', preferred: '物理', additional: ["化学"], offset: 0 },
+      { name: '经济管理类（工商管理）', preferred: '不限', additional: [], offset: -10 }
+    ]
+  },
+  {
+    id: 'hynu', name: '衡阳师范学院', tier: '普通', city: '衡阳',
+    groups: [
+      { name: '计算机类（计算机科学与技术）', preferred: '物理', additional: [], offset: -37 },
+      { name: '教育类（教育学、小学教育）', preferred: '不限', additional: [], offset: -44 },
+      { name: '中国语言文学类（汉语言文学）', preferred: '历史', additional: [], offset: -49 },
+      { name: '数学类（数学与应用数学）', preferred: '物理', additional: [], offset: -42 },
+      { name: '外语类（英语）', preferred: '不限', additional: [], offset: -52 }
+    ]
+  },
+  {
+    id: 'zzul', name: '郑州轻工业大学', tier: '普通', city: '郑州',
+    groups: [
+      { name: '计算机类（计算机科学与技术）', preferred: '物理', additional: [], offset: -2 },
+      { name: '电子信息类（电子信息工程）', preferred: '物理', additional: [], offset: -4 },
+      { name: '食品科学与工程类', preferred: '物理', additional: ["化学"], offset: -10 },
+      { name: '经济管理类（工商管理）', preferred: '不限', additional: [], offset: -15 }
+    ]
+  },
+  {
+    id: 'gxnu', name: '广西师范大学', tier: '普通', city: '桂林',
+    groups: [
+      { name: '计算机类（计算机科学与技术）', preferred: '物理', additional: [], offset: -30 },
+      { name: '电子信息类（电子信息工程）', preferred: '物理', additional: [], offset: -32 },
+      { name: '教育类（教育学）', preferred: '不限', additional: [], offset: -37 },
+      { name: '中国语言文学类', preferred: '历史', additional: [], offset: -42 },
+      { name: '外语类（英语、日语）', preferred: '不限', additional: [], offset: -45 }
+    ]
+  },
+  {
+    id: 'ldu', name: '鲁东大学', tier: '普通', city: '烟台',
+    groups: [
+      { name: '计算机类（计算机科学与技术）', preferred: '物理', additional: [], offset: -34 },
+      { name: '教育类（教育学）', preferred: '不限', additional: [], offset: -42 },
+      { name: '中国语言文学类', preferred: '历史', additional: [], offset: -47 },
+      { name: '经济管理类（工商管理）', preferred: '不限', additional: [], offset: -50 }
+    ]
+  },
+  {
+    id: 'xxu', name: '新乡学院', tier: '普通', city: '新乡',
+    groups: [
+      { name: '计算机类（计算机科学与技术）', preferred: '物理', additional: [], offset: -67 },
+      { name: '机械类（机械设计制造及其自动化）', preferred: '物理', additional: [], offset: -70 },
+      { name: '教育类（小学教育）', preferred: '不限', additional: [], offset: -75 },
+      { name: '经济管理类（会计学）', preferred: '不限', additional: [], offset: -80 }
+    ]
+  },
+  {
+    id: 'hbnub', name: '湖北理工学院', tier: '普通', city: '黄石',
+    groups: [
+      { name: '计算机类（计算机科学与技术）', preferred: '物理', additional: [], offset: -45 },
+      { name: '电子信息类（电子信息工程）', preferred: '物理', additional: [], offset: -47 },
+      { name: '土木类（土木工程）', preferred: '物理', additional: [], offset: -49 },
+      { name: '经济管理类（工商管理）', preferred: '不限', additional: [], offset: -55 }
+    ]
+  },
+  {
+    id: 'gdtc', name: '广东技术师范大学', tier: '普通', city: '广州',
+    groups: [
+      { name: '计算机类（计算机科学与技术）', preferred: '物理', additional: [], offset: -15 },
+      { name: '电子信息类（通信工程）', preferred: '物理', additional: [], offset: -17 },
+      { name: '教育类（教育学）', preferred: '不限', additional: [], offset: -25 },
+      { name: '中国语言文学类', preferred: '历史', additional: [], offset: -30 }
+    ]
+  },
+  {
+    id: 'cdu', name: '成都大学', tier: '普通', city: '成都',
+    groups: [
+      { name: '计算机类（计算机科学与技术、软件工程）', preferred: '物理', additional: [], offset: -11 },
+      { name: '电子信息类（电子信息工程、通信工程）', preferred: '物理', additional: [], offset: -14 },
+      { name: '药学类（药学、药物制剂）', preferred: '物理', additional: ["化学"], offset: -21 },
+      { name: '经济管理类（工商管理、会计学）', preferred: '不限', additional: [], offset: -24 },
+      { name: '外语类（英语、泰语）', preferred: '不限', additional: [], offset: -28 }
+    ]
+  },
+  {
+    id: 'xhu', name: '西华大学', tier: '普通', city: '成都',
+    groups: [
+      { name: '计算机类（计算机科学与技术）', preferred: '物理', additional: [], offset: -21 },
+      { name: '机械类（机械设计制造及其自动化、车辆工程）', preferred: '物理', additional: [], offset: -24 },
+      { name: '食品科学与工程类', preferred: '物理', additional: ["化学"], offset: -31 },
+      { name: '经济管理类（工商管理）', preferred: '不限', additional: [], offset: -34 },
+      { name: '中国语言文学类', preferred: '历史', additional: [], offset: -38 }
+    ]
+  },
+  {
+    id: 'cdu_tech', name: '成都工业学院', tier: '普通', city: '成都',
+    groups: [
+      { name: '计算机类（计算机科学与技术）', preferred: '物理', additional: [], offset: -32 },
+      { name: '电子信息类（电子信息工程、通信工程）', preferred: '物理', additional: [], offset: -35 },
+      { name: '机械电子工程', preferred: '物理', additional: [], offset: -38 },
+      { name: '经济管理类（物流管理、国际商务）', preferred: '不限', additional: [], offset: -45 }
+    ]
+  },
+  {
+    id: 'cdnu', name: '成都师范学院', tier: '普通', city: '成都',
+    groups: [
+      { name: '计算机类（计算机科学与技术）', preferred: '物理', additional: [], offset: -36 },
+      { name: '数学类（数学与应用数学）', preferred: '物理', additional: [], offset: -38 },
+      { name: '教育类（小学教育、学前教育）', preferred: '不限', additional: [], offset: -43 },
+      { name: '中国语言文学类（汉语言文学）', preferred: '历史', additional: [], offset: -46 },
+      { name: '外语类（英语）', preferred: '不限', additional: [], offset: -48 }
+    ]
+  },
+  {
+    id: 'suse', name: '四川轻化工大学', tier: '普通', city: '自贡',
+    groups: [
+      { name: '计算机类（计算机科学与技术）', preferred: '物理', additional: [], offset: -38 },
+      { name: '电子信息类（电子信息工程）', preferred: '物理', additional: [], offset: -41 },
+      { name: '化工与材料类（化学工程与工艺）', preferred: '物理', additional: ["化学"], offset: -46 },
+      { name: '经济管理类（工商管理）', preferred: '不限', additional: [], offset: -48 },
+      { name: '法学', preferred: '不限', additional: ["政治"], offset: -44 }
+    ]
+  },
+  {
+    id: 'mynu', name: '绵阳师范学院', tier: '普通', city: '绵阳',
+    groups: [
+      { name: '计算机类（计算机科学与技术）', preferred: '物理', additional: [], offset: -40 },
+      { name: '数学类（数学与应用数学）', preferred: '物理', additional: [], offset: -42 },
+      { name: '教育类（小学教育）', preferred: '不限', additional: [], offset: -47 },
+      { name: '中国语言文学类', preferred: '历史', additional: [], offset: -50 },
+      { name: '外语类（英语）', preferred: '不限', additional: [], offset: -52 }
+    ]
+  },
+  {
+    id: 'njtc', name: '内江师范学院', tier: '普通', city: '内江',
+    groups: [
+      { name: '计算机类（计算机科学与技术）', preferred: '物理', additional: [], offset: -45 },
+      { name: '数学类（数学与应用数学）', preferred: '物理', additional: [], offset: -48 },
+      { name: '教育类（教育学）', preferred: '不限', additional: [], offset: -52 },
+      { name: '中国语言文学类', preferred: '历史', additional: [], offset: -55 },
+      { name: '经济管理类（工商管理）', preferred: '不限', additional: [], offset: -58 }
+    ]
+  },
+  {
+    id: 'lstc', name: '乐山师范学院', tier: '普通', city: '乐山',
+    groups: [
+      { name: '计算机类（计算机科学与技术）', preferred: '物理', additional: [], offset: -47 },
+      { name: '电子信息类（电子信息工程）', preferred: '物理', additional: [], offset: -50 },
+      { name: '教育类（小学教育、特殊教育）', preferred: '不限', additional: [], offset: -53 },
+      { name: '中国语言文学类', preferred: '历史', additional: [], offset: -57 },
+      { name: '外语类（英语、日语）', preferred: '不限', additional: [], offset: -59 }
+    ]
+  },
+  {
+    id: 'yibinu', name: '宜宾学院', tier: '普通', city: '宜宾',
+    groups: [
+      { name: '计算机类（计算机科学与技术）', preferred: '物理', additional: [], offset: -56 },
+      { name: '电子信息类（电子信息工程）', preferred: '物理', additional: [], offset: -58 },
+      { name: '教育类（小学教育）', preferred: '不限', additional: [], offset: -62 },
+      { name: '中国语言文学类', preferred: '历史', additional: [], offset: -66 },
+      { name: '经济管理类（工商管理）', preferred: '不限', additional: [], offset: -68 }
+    ]
+  },
+  {
+    id: 'scwl', name: '四川文理学院', tier: '普通', city: '达州',
+    groups: [
+      { name: '计算机类（计算机科学与技术）', preferred: '物理', additional: [], offset: -62 },
+      { name: '机械类（机械工程）', preferred: '物理', additional: [], offset: -65 },
+      { name: '教育类（小学教育）', preferred: '不限', additional: [], offset: -68 },
+      { name: '中国语言文学类', preferred: '历史', additional: [], offset: -72 },
+      { name: '经济管理类（财务管理）', preferred: '不限', additional: [], offset: -74 }
+    ]
+  },
+  {
+    id: 'pzhxy', name: '攀枝花学院', tier: '普通', city: '攀枝花',
+    groups: [
+      { name: '计算机类（计算机科学与技术）', preferred: '物理', additional: [], offset: -68 },
+      { name: '电子信息类（电子信息工程）', preferred: '物理', additional: [], offset: -70 },
+      { name: '土木类（土木工程）', preferred: '物理', additional: [], offset: -72 },
+      { name: '经济管理类（工商管理）', preferred: '不限', additional: [], offset: -76 },
+      { name: '外语类（英语）', preferred: '不限', additional: [], offset: -78 }
+    ]
+  },
+  {
+    id: 'xctc', name: '西昌学院', tier: '普通', city: '西昌',
+    groups: [
+      { name: '计算机类（计算机科学与技术）', preferred: '物理', additional: [], offset: -72 },
+      { name: '农林类（农学、烟草）', preferred: '物理', additional: ["化学","生物"], offset: -78 },
+      { name: '教育类（小学教育）', preferred: '不限', additional: [], offset: -80 },
+      { name: '中国语言文学类', preferred: '历史', additional: [], offset: -84 },
+      { name: '经济管理类（工商管理）', preferred: '不限', additional: [], offset: -82 }
+    ]
+  },
+  {
+    id: 'scun', name: '四川民族学院', tier: '普通', city: '康定',
+    groups: [
+      { name: '计算机类（计算机科学与技术）', preferred: '物理', additional: [], offset: -80 },
+      { name: '教育类（小学教育、学前教育）', preferred: '不限', additional: [], offset: -86 },
+      { name: '中国语言文学类（汉语言文学）', preferred: '历史', additional: [], offset: -90 },
+      { name: '经济管理类（财务管理）', preferred: '不限', additional: [], offset: -88 }
+    ]
+  },
+  {
+    id: 'abtc', name: '阿坝师范学院', tier: '普通', city: '汶川',
+    groups: [
+      { name: '计算机类（计算机科学与技术）', preferred: '物理', additional: [], offset: -83 },
+      { name: '数学类（数学与应用数学）', preferred: '物理', additional: [], offset: -86 },
+      { name: '教育类（小学教育、学前教育）', preferred: '不限', additional: [], offset: -91 },
+      { name: '中国语言文学类', preferred: '历史', additional: [], offset: -95 }
+    ]
+  },
+  {
+    id: 'scvtcc', name: '四川交通职业技术学院', tier: '专科', city: '成都',
+    groups: [
+      { name: '道路桥梁工程技术', preferred: '物理', additional: [], offset: -86 },
+      { name: '汽车检测与维修技术', preferred: '物理', additional: [], offset: -91 },
+      { name: '计算机应用技术', preferred: '物理', additional: [], offset: -89 },
+      { name: '物流管理', preferred: '不限', additional: [], offset: -98 }
+    ]
+  },
+  {
+    id: 'cap', name: '成都航空职业技术学院', tier: '专科', city: '成都',
+    groups: [
+      { name: '飞行器制造技术', preferred: '物理', additional: [], offset: -94 },
+      { name: '航空机电设备维修', preferred: '物理', additional: [], offset: -97 },
+      { name: '无人机应用技术', preferred: '物理', additional: [], offset: -99 },
+      { name: '空中乘务', preferred: '不限', additional: [], offset: -102 },
+      { name: '电子信息工程技术', preferred: '物理', additional: [], offset: -100 }
+    ]
+  },
+  {
+    id: 'scac', name: '四川建筑职业技术学院', tier: '专科', city: '德阳',
+    groups: [
+      { name: '建筑工程技术', preferred: '物理', additional: [], offset: -100 },
+      { name: '工程造价', preferred: '物理', additional: [], offset: -97 },
+      { name: '建筑装饰工程技术', preferred: '物理', additional: [], offset: -104 },
+      { name: '物业管理', preferred: '不限', additional: [], offset: -108 }
+    ]
+  },
+  {
+    id: 'cdtc', name: '成都纺织高等专科学校', tier: '专科', city: '成都',
+    groups: [
+      { name: '服装设计与工艺', preferred: '不限', additional: [], offset: -113 },
+      { name: '纺织品检验与贸易', preferred: '物理', additional: ["化学"], offset: -118 },
+      { name: '计算机应用技术', preferred: '物理', additional: [], offset: -111 },
+      { name: '电子商务', preferred: '不限', additional: [], offset: -116 }
+    ]
+  },
+  {
+    id: 'cdvtc', name: '成都职业技术学院', tier: '专科', city: '成都',
+    groups: [
+      { name: '软件技术', preferred: '物理', additional: [], offset: -107 },
+      { name: '护理', preferred: '不限', additional: [], offset: -109 },
+      { name: '旅游管理', preferred: '不限', additional: [], offset: -113 },
+      { name: '金融管理', preferred: '不限', additional: [], offset: -111 }
+    ]
+  },
+  {
+    id: 'sptc', name: '四川邮电职业技术学院', tier: '专科', city: '成都',
+    groups: [
+      { name: '通信技术', preferred: '物理', additional: [], offset: -94 },
+      { name: '移动应用开发', preferred: '物理', additional: [], offset: -97 },
+      { name: '市场营销', preferred: '不限', additional: [], offset: -102 },
+      { name: '会计', preferred: '不限', additional: [], offset: -104 }
+    ]
+  },
+  {
+    id: 'cdneusoft', name: '成都东软学院', tier: '普通', city: '成都',
+    groups: [
+      { name: '计算机类（软件工程、计算机科学与技术）', preferred: '物理', additional: [], offset: -64 },
+      { name: '电子信息类（电子信息工程）', preferred: '物理', additional: [], offset: -67 },
+      { name: '数字媒体技术', preferred: '物理', additional: [], offset: -71 },
+      { name: '经济管理类（电子商务、财务管理）', preferred: '不限', additional: [], offset: -75 }
+    ]
+  },
+  {
+    id: 'scgs', name: '四川工商学院', tier: '专科', city: '成都',
+    groups: [
+      { name: '计算机类（计算机科学与技术）', preferred: '物理', additional: [], offset: -73 },
+      { name: '电子信息类（电子信息工程、通信工程）', preferred: '物理', additional: [], offset: -76 },
+      { name: '经济管理类（会计学、工商管理）', preferred: '不限', additional: [], offset: -81 },
+      { name: '外语类（英语）', preferred: '不限', additional: [], offset: -85 }
+    ]
+  },
+  {
+    id: 'scit', name: '四川工业科技学院', tier: '专科', city: '德阳',
+    groups: [
+      { name: '计算机类（计算机科学与技术）', preferred: '物理', additional: [], offset: -81 },
+      { name: '机械类（机械工程、车辆工程）', preferred: '物理', additional: [], offset: -85 },
+      { name: '经济管理类（财务管理）', preferred: '不限', additional: [], offset: -91 },
+      { name: '教育类（学前教育）', preferred: '不限', additional: [], offset: -95 }
+    ]
+  },
+  {
+    id: 'geely_cd', name: '吉利学院', tier: '专科', city: '成都',
+    groups: [
+      { name: '计算机类（计算机科学与技术、数据科学）', preferred: '物理', additional: [], offset: -79 },
+      { name: '机械类（车辆工程、机械工程）', preferred: '物理', additional: [], offset: -84 },
+      { name: '经济管理类（工商管理）', preferred: '不限', additional: [], offset: -89 },
+      { name: '外语类（英语）', preferred: '不限', additional: [], offset: -92 }
+    ]
+  },
+  {
+    id: 'mdu', name: '绵阳城市学院', tier: '专科', city: '绵阳',
+    groups: [
+      { name: '计算机类（计算机科学与技术）', preferred: '物理', additional: [], offset: -79 },
+      { name: '土木类（土木工程）', preferred: '物理', additional: [], offset: -83 },
+      { name: '经济管理类（工商管理）', preferred: '不限', additional: [], offset: -89 },
+      { name: '外语类（英语）', preferred: '不限', additional: [], offset: -93 }
+    ]
+  },
+  {
+    id: 'xapeihua', name: '西安培华学院', tier: '普通', city: '西安',
+    groups: [
+      { name: '计算机类（计算机科学与技术）', preferred: '物理', additional: [], offset: -70 },
+      { name: '电子信息类（电子信息工程）', preferred: '物理', additional: [], offset: -74 },
+      { name: '经济管理类（会计学）', preferred: '不限', additional: [], offset: -78 },
+      { name: '中国语言文学类', preferred: '历史', additional: [], offset: -82 }
+    ]
+  },
+  {
+    id: 'zzgs', name: '郑州工商学院', tier: '普通', city: '郑州',
+    groups: [
+      { name: '计算机类（计算机科学与技术）', preferred: '物理', additional: [], offset: -68 },
+      { name: '电子信息类（电子信息工程）', preferred: '物理', additional: [], offset: -71 },
+      { name: '经济管理类（工商管理、会计学）', preferred: '不限', additional: [], offset: -78 },
+      { name: '法学', preferred: '不限', additional: ["政治"], offset: -74 }
+    ]
+  },
+  {
+    id: 'whsw', name: '武汉生物工程学院', tier: '普通', city: '武汉',
+    groups: [
+      { name: '计算机类（计算机科学与技术）', preferred: '物理', additional: [], offset: -61 },
+      { name: '生物工程类（生物工程、生物技术）', preferred: '物理', additional: ["化学","生物"], offset: -68 },
+      { name: '药学类（药学）', preferred: '物理', additional: ["化学"], offset: -71 },
+      { name: '经济管理类（工商管理）', preferred: '不限', additional: [], offset: -75 }
+    ]
+  },
+  {
+    id: 'nclg', name: '南昌理工学院', tier: '普通', city: '南昌',
+    groups: [
+      { name: '计算机类（计算机科学与技术）', preferred: '物理', additional: [], offset: -66 },
+      { name: '电子信息类（电子信息工程）', preferred: '物理', additional: [], offset: -69 },
+      { name: '机械类（机械设计制造及其自动化）', preferred: '物理', additional: [], offset: -72 },
+      { name: '经济管理类（工商管理）', preferred: '不限', additional: [], offset: -78 }
+    ]
+  },
+  {
+    id: 'qd_binhai', name: '青岛滨海学院', tier: '普通', city: '青岛',
+    groups: [
+      { name: '计算机类（计算机科学与技术）', preferred: '物理', additional: [], offset: -71 },
+      { name: '电子信息类（电子信息工程）', preferred: '物理', additional: [], offset: -75 },
+      { name: '经济管理类（财务管理）', preferred: '不限', additional: [], offset: -81 },
+      { name: '外语类（英语、日语）', preferred: '不限', additional: [], offset: -85 }
+    ]
+  },
+  {
+    id: 'ynjjgl', name: '云南经济管理学院', tier: '专科', city: '昆明',
+    groups: [
+      { name: '计算机类（计算机科学与技术）', preferred: '物理', additional: [], offset: -87 },
+      { name: '经济管理类（会计学、财务管理）', preferred: '不限', additional: [], offset: -93 },
+      { name: '教育类（学前教育）', preferred: '不限', additional: [], offset: -98 },
+      { name: '医学类（护理学）', preferred: '不限', additional: [], offset: -91 }
+    ]
+  },
+  {
+    id: 'gxwgy', name: '广西外国语学院', tier: '专科', city: '南宁',
+    groups: [
+      { name: '外语类（英语、泰语、越南语）', preferred: '不限', additional: [], offset: -92 },
+      { name: '经济管理类（国际经济与贸易）', preferred: '不限', additional: [], offset: -97 },
+      { name: '计算机类（计算机科学与技术）', preferred: '物理', additional: [], offset: -88 },
+      { name: '中国语言文学类', preferred: '历史', additional: [], offset: -100 }
+    ]
+  },
+  {
+    id: 'hubei_sw', name: '湖北商贸学院', tier: '专科', city: '武汉',
+    groups: [
+      { name: '计算机类（计算机科学与技术）', preferred: '物理', additional: [], offset: -81 },
+      { name: '经济管理类（会计学、工商管理）', preferred: '不限', additional: [], offset: -87 },
+      { name: '外语类（英语）', preferred: '不限', additional: [], offset: -93 },
+      { name: '设计类（视觉传达设计）', preferred: '不限', additional: [], offset: -95 }
+    ]
+  },
+];
+
+// ==================== 高校详情数据 ====================
+// r:全国排名 t:类型 d:简介 e:{rt:就业率, sl:应届月薪范围, em:主要就业单位}
+const UNI_DETAILS = {
+  'tsinghua':{r:1,t:'综合',n:'公办',f:'5000-6000',a:'北京市海淀区清华园',d:'中国最顶尖的综合性研究型大学，C9联盟成员。工科实力全国第一，被誉为"红色工程师的摇篮"。',e:{rt:98.8,sl:'1.5-2.5万',em:['华为','腾讯','国家电网','航天科技','中科院']}},
+  'pku':{r:2,t:'综合',n:'公办',f:'5000-6000',a:'北京市海淀区颐和园路5号',d:'中国最高学府之一，C9联盟成员。文理医并重，人文社科和基础科学实力全国领先。',e:{rt:98.5,sl:'1.4-2.3万',em:['中科院','北京大学附属医院','中信证券','国家部委','新华社']}},
+  'fudan':{r:5,t:'综合',n:'公办',f:'5000-6500',a:'上海市杨浦区邯郸路220号',d:'C9联盟成员，位于上海。文理医经管全面发展，新闻学和临床医学享誉全国。',e:{rt:98.3,sl:'1.3-2.2万',em:['复星集团','上海各大医院','普华永道','字节跳动','中金公司']}},
+  'sjtu':{r:4,t:'综合',n:'公办',f:'5000-6500',a:'上海市闵行区东川路800号',d:'C9联盟成员，位于上海。以工科和医科见长，船舶海洋工程全国第一。',e:{rt:98.5,sl:'1.4-2.3万',em:['上汽集团','上海交大附属医院','华为','商飞','摩根士丹利']}},
+  'zju':{r:3,t:'综合',n:'公办',f:'5300-6000',a:'杭州市西湖区余杭塘路866号',d:'C9联盟成员，位于杭州。学科门类齐全，计算机和农学实力突出，创新创业氛围浓厚。',e:{rt:98,sl:'1.3-2.1万',em:['阿里巴巴','网易','海康威视','浙大附属医院','华为']}},
+  'nju':{r:6,t:'综合',n:'公办',f:'5200-6000',a:'南京市栖霞区仙林大道163号',d:'C9联盟成员，位于南京。以文理见长，天文和计算机科学尤为突出。',e:{rt:97.8,sl:'1.2-2.0万',em:['苏宁','华为','中兴','江苏银行','南大附属医院']}},
+  'hit':{r:14,t:'理工',n:'公办',f:'4000-5500',a:'哈尔滨市南岗区西大直街92号',d:'C9联盟成员，国防七子之首。航天、计算机、机器人等工科领域实力雄厚。',e:{rt:97,sl:'1.1-1.9万',em:['航天科技','航天科工','华为','中国商飞','国家电网']}},
+  'xjtlu':{r:10,t:'综合',n:'公办',f:'4950-6000',a:'西安市碑林区咸宁西路28号',d:'C9联盟成员，位于西安。以工科和医学见长，电气工程全国第一。',e:{rt:97.2,sl:'1.1-1.9万',em:['国家电网','华为','西电集团','比亚迪','中航工业']}},
+  'whu':{r:8,t:'综合',n:'公办',f:'4500-5850',a:'武汉市武昌区珞珈山',d:'中上985，位于武汉。法学、测绘、水利等学科全国领先，校园以樱花闻名。',e:{rt:96.5,sl:'1.1-1.8万',em:['华为','武大附属医院','长江水利','东风汽车','小米']}},
+  'hust':{r:7,t:'理工',n:'公办',f:'4500-5850',a:'武汉市洪山区珞喻路1037号',d:'中上985，位于武汉。以工科和医科著称，光电和机械全国顶尖。',e:{rt:97,sl:'1.2-1.9万',em:['华为','华科附属医院','中兴','国家电网','腾讯']}},
+  'sysu':{r:12,t:'综合',n:'公办',f:'5000-6000',a:'广州市海珠区新港西路135号',d:'中上985，位于广州。华南第一学府，医学和管理学实力突出。',e:{rt:96.8,sl:'1.1-1.8万',em:['中山大学附属医院','腾讯','华为','广发证券','宝洁']}},
+  'tongji':{r:16,t:'理工',n:'公办',f:'5000-6500',a:'上海市杨浦区四平路1239号',d:'中上985，位于上海。以土木建筑和设计著称，车辆工程实力强劲。',e:{rt:97,sl:'1.2-1.9万',em:['上汽集团','同济建筑设计院','上海建工','大众','华为']}},
+  'nankai':{r:18,t:'综合',n:'公办',f:'4200-5800',a:'天津市南开区卫津路94号',d:'中上985，位于天津。以经济学和化学著称，周恩来总理母校。',e:{rt:96,sl:'1.0-1.7万',em:['各大银行','天津市政府','华为','中石化','南开附属医院']}},
+  'beihang':{r:15,t:'理工',n:'公办',f:'5000-5500',a:'北京市海淀区学院路37号',d:'中上985，国防七子之一。航空航天和计算机实力强劲，位于北京。',e:{rt:97.5,sl:'1.3-2.1万',em:['航天科技','航天科工','商飞','华为','国家电网']}},
+  'bit':{r:19,t:'理工',n:'公办',f:'5000-5500',a:'北京市海淀区中关村南大街5号',d:'中上985，国防七子之一。以兵器科学和车辆工程闻名，位于北京。',e:{rt:97,sl:'1.2-1.9万',em:['中国兵器','华为','北汽集团','航天科工','中兴']}},
+  'seu':{r:17,t:'综合',n:'公办',f:'4600-5800',a:'南京市玄武区四牌楼2号',d:'中上985，位于南京。建筑学和电子信息工程全国顶尖。',e:{rt:96.8,sl:'1.1-1.8万',em:['华为','中兴','东南建筑设计院','国家电网','苏宁']}},
+  'tju':{r:20,t:'理工',n:'公办',f:'4200-5800',a:'天津市南开区卫津路92号',d:'中上985，位于天津。化工和建筑实力突出，中国第一所现代大学。',e:{rt:96.2,sl:'1.0-1.7万',em:['中石化','天津建筑设计院','华为','国家电网','海尔']}},
+  'xmu':{r:22,t:'综合',n:'公办',f:'5460',a:'厦门市思明区思明南路422号',d:'中上985，位于厦门。经济管理和海洋科学实力突出，校园风景优美。',e:{rt:95.5,sl:'1.0-1.6万',em:['厦门航空','各大银行','华为','厦门大学附属医院','美图']}},
+  'scu':{r:13,t:'综合',n:'公办',f:'4440-6000',a:'成都市武侯区一环路南一段24号',d:'中上985，位于成都。口腔医学亚洲第一，华西医学中心享誉全国。',e:{rt:96,sl:'1.0-1.7万',em:['华西医院','华为','英特尔','四川省人民医院','国家电网']}},
+  'sdu':{r:21,t:'综合',n:'公办',f:'4400-5800',a:'济南市历城区山大南路27号',d:'中上985，位于济南。数学和医学实力突出，文史见长。',e:{rt:95.2,sl:'0.9-1.5万',em:['山东大学附属医院','海尔','海信','国家电网','浪潮']}},
+  'jlu':{r:25,t:'综合',n:'公办',f:'4180-5500',a:'长春市朝阳区前进大街2699号',d:'中下985，位于长春。法学和车辆工程实力突出，校区规模全国最大之一。',e:{rt:94,sl:'0.8-1.4万',em:['一汽集团','吉林大学附属医院','中车','华为','长春光机所']}},
+  'csu':{r:23,t:'综合',n:'公办',f:'4500-6000',a:'长沙市岳麓区麓山南路932号',d:'中下985，位于长沙。以工科和医科见长，铁道和有色金属领域强势。',e:{rt:95.5,sl:'1.0-1.6万',em:['湘雅医院','中车','三一重工','华为','中铁']}},
+  'hnu':{r:28,t:'综合',n:'公办',f:'4500-6000',a:'长沙市岳麓区麓山南路2号',d:'中下985，位于长沙。土木建筑和机械实力突出，岳麓书院所在地。',e:{rt:94.5,sl:'0.9-1.5万',em:['三一重工','中建','华为','中联重科','国家电网']}},
+  'cqu':{r:30,t:'综合',n:'公办',f:'4500-5800',a:'重庆市沙坪坝区沙正街174号',d:'中下985，位于重庆。建筑和电气实力突出，西南地区重要高校。',e:{rt:94,sl:'0.9-1.4万',em:['长安汽车','重庆建工','华为','国家电网','中建']}},
+  'uestc':{r:27,t:'理工',n:'公办',f:'4900-6000',a:'成都市郫都区西源大道2006号',d:'中下985，位于成都。电子信息领域全国顶尖，"中国电子类院校的排头兵"。',e:{rt:97,sl:'1.2-2.0万',em:['华为','中兴','腾讯','中国电子科技','英特尔']}},
+  'nwpu':{r:24,t:'理工',n:'公办',f:'4950-6000',a:'西安市长安区东祥路1号',d:'中下985，国防七子之一，位于西安。三航（航空、航天、航海）特色鲜明。',e:{rt:96.5,sl:'1.1-1.8万',em:['中航工业','航天科技','中国商飞','华为','中国船舶']}},
+  'lzu':{r:35,t:'综合',n:'公办',f:'4200-5500',a:'兰州市城关区天水南路222号',d:'中下985，位于兰州。基础学科实力强劲，化学和草学全国领先。',e:{rt:92,sl:'0.7-1.2万',em:['中科院','甘肃省人民医院','中石油','各大中学','地方政府']}},
+  'cau':{r:29,t:'农林',n:'公办',f:'5000-6000',a:'北京市海淀区清华东路17号',d:'中下985，位于北京。农林类全国第一，食品科学和生物技术实力强劲。',e:{rt:95,sl:'0.9-1.5万',em:['中粮集团','农业农村部','中科院','先正达','各大食品企业']}},
+  'bnu':{r:11,t:'师范',n:'公办',f:'4800-6000',a:'北京市海淀区新街口外大街19号',d:'中上985，位于北京。师范类全国第一，教育学和心理学顶尖。',e:{rt:96,sl:'1.0-1.7万',em:['各大中学','教育部','新华社','北师大附属学校','各大互联网教育公司']}},
+  'ecnu':{r:26,t:'师范',n:'公办',f:'5000-6000',a:'上海市普陀区中山北路3663号',d:'中上985，位于上海。师范类全国第二，教育学和地理科学顶尖。',e:{rt:95.5,sl:'1.0-1.6万',em:['上海各大中学','华东师大附属学校','各大互联网公司','上海市教委']}},
+  'neu':{r:32,t:'理工',n:'公办',f:'4200-5500',a:'沈阳市和平区文化路3巷11号',d:'中下985，位于沈阳。自动化控制实力突出，冶金和矿业传统强校。',e:{rt:93.5,sl:'0.8-1.4万',em:['鞍钢','华为','东软','一汽','国家电网']}},
+  'dlut':{r:31,t:'理工',n:'公办',f:'4200-5500',a:'大连市甘井子区凌工路2号',d:'中下985，位于大连。化工和机械实力突出，东北地区重要工科院校。',e:{rt:94,sl:'0.9-1.4万',em:['中石油','大连船舶','华为','英特尔','国家电网']}},
+  'ouc':{r:40,t:'综合',n:'公办',f:'4500-5800',a:'青岛市崂山区松岭路238号',d:'中下985，位于青岛。海洋科学和水产全国第一。',e:{rt:93,sl:'0.8-1.3万',em:['国家海洋局','中科院海洋所','海尔','青岛港','各大水产企业']}},
+  'bupt':{r:37,t:'理工',n:'公办',f:'5000-5500',a:'北京市海淀区西土城路10号',d:'强势211，位于北京。通信工程全国顶尖，"信息黄埔"。',e:{rt:97.5,sl:'1.3-2.1万',em:['华为','三大运营商','腾讯','中兴','国家电网']}},
+  'xidian':{r:39,t:'理工',n:'公办',f:'4950-6000',a:'西安市长安区西沣路266号',d:'强势211，位于西安。电子信息特色鲜明，雷达和密码学全国领先。',e:{rt:96.5,sl:'1.1-1.9万',em:['华为','中兴','中国电子科技','腾讯','航天科技']}},
+  'shufe':{r:33,t:'财经',n:'公办',f:'5000-6500',a:'上海市杨浦区国定路777号',d:'强势211，位于上海。财经类全国第一，会计学和金融学顶尖。',e:{rt:97,sl:'1.2-2.0万',em:['四大会计师事务所','各大券商','各大银行','基金公司','跨国公司财务部']}},
+  'cufe':{r:34,t:'财经',n:'公办',f:'5000-6000',a:'北京市海淀区学院南路39号',d:'强势211，"两财一贸"之一，位于北京。金融学和会计学全国顶尖。',e:{rt:96.8,sl:'1.2-2.0万',em:['各大银行总行','四大会计师事务所','各大券商','财政部','国家税务总局']}},
+  'uibe':{r:36,t:'财经',n:'公办',f:'5000-6000',a:'北京市朝阳区惠新东街10号',d:'强势211，"两财一贸"之一，位于北京。国际经济与贸易全国第一。',e:{rt:96.5,sl:'1.1-1.9万',em:['商务部','各大跨国公司','四大会计师事务所','各大银行','外交部']}},
+  'nuaa':{r:42,t:'理工',n:'公办',f:'4600-5800',a:'南京市江宁区将军大道29号',d:'强势211，国防七子之一，位于南京。航空航天特色鲜明。',e:{rt:96,sl:'1.0-1.7万',em:['中航工业','商飞','航天科技','华为','中兴']}},
+  'njust':{r:43,t:'理工',n:'公办',f:'4600-5800',a:'南京市玄武区孝陵卫200号',d:'强势211，国防七子之一，位于南京。兵器科学全国领先。',e:{rt:95.5,sl:'1.0-1.6万',em:['中国兵器','华为','中兴','中国船舶','航天科工']}},
+  'whut':{r:44,t:'理工',n:'公办',f:'4500-5850',a:'武汉市洪山区珞狮路122号',d:'普通211，位于武汉。材料和交通特色鲜明。',e:{rt:94.5,sl:'0.9-1.5万',em:['中建','东风汽车','华为','中船','各大建材企业']}},
+  'swjtu':{r:45,t:'理工',n:'公办',f:'4500-5800',a:'成都市郫都区犀安路999号',d:'普通211，位于成都。交通运输工程全国顶尖，铁道领域黄埔军校。',e:{rt:95,sl:'1.0-1.6万',em:['中铁','中车','成都铁路局','华为','中建']}},
+  'bjtu':{r:41,t:'理工',n:'公办',f:'5000-5500',a:'北京市海淀区上园村3号',d:'普通211，位于北京。交通和通信特色，地理位置优越。',e:{rt:95.5,sl:'1.1-1.8万',em:['中铁','北京铁路局','华为','三大运营商','交科院']}},
+  'ecust':{r:46,t:'理工',n:'公办',f:'5000-6000',a:'上海市徐汇区梅陇路130号',d:'普通211，位于上海。化工全国顶尖，位于上海区位优势明显。',e:{rt:95,sl:'1.1-1.7万',em:['中石化','巴斯夫','陶氏','药明康德','华为']}},
+  'shu':{r:47,t:'综合',n:'公办',f:'5000-6000',a:'上海市宝山区上大路99号',d:'普通211，位于上海。综合实力较强，得益于上海区位优势发展迅速。',e:{rt:94,sl:'1.0-1.6万',em:['上汽','各大银行上海分行','华为','上海市政府','各大互联网公司']}},
+  'suda':{r:38,t:'综合',n:'公办',f:'4600-5800',a:'苏州市姑苏区十梓街1号',d:'普通211，位于苏州。医学和材料进步迅速，地处长三角核心区域。',e:{rt:95,sl:'1.0-1.6万',em:['苏州大学附属医院','博世','华为','微软','各大药企']}},
+  'jnu':{r:48,t:'综合',n:'公办',f:'5000-6000',a:'广州市天河区黄埔大道西601号',d:'普通211，位于广州。新闻传播全国领先，侨校特色鲜明。',e:{rt:93.5,sl:'0.9-1.5万',em:['南方报业','腾讯','华为','各大银行','宝洁']}},
+  'hfuut':{r:51,t:'理工',n:'公办',f:'4500-5500',a:'合肥市包河区屯溪路193号',d:'普通211，位于合肥。工科为主，汽车和机械有特色。',e:{rt:93,sl:'0.8-1.3万',em:['江淮汽车','京东方','美的','华为','中建']}},
+  'fzu':{r:52,t:'综合',n:'公办',f:'4500-5460',a:'福州市闽侯县大学城',d:'普通211，位于福州。化学和化工有特色，福建省重点建设高校。',e:{rt:92.5,sl:'0.7-1.3万',em:['宁德时代','福耀玻璃','福建省建筑设计院','各大银行福建分行']}},
+  'ncu':{r:50,t:'综合',n:'公办',f:'4350-5550',a:'南昌市红谷滩区学府大道999号',d:'普通211，位于南昌。医学和食品科学有特色，江西省最高学府。',e:{rt:92,sl:'0.7-1.2万',em:['南昌大学附属医院','江铃汽车','江西省人民医院','各大中学']}},
+  'zzu':{r:49,t:'综合',n:'公办',f:'4400-5700',a:'郑州市高新区科学大道100号',d:'普通211，位于郑州。规模全国最大，医学实力在河南领先。',e:{rt:92.5,sl:'0.7-1.3万',em:['郑州大学附属医院','宇通客车','河南省人民医院','中铁']}},
+  'ynu':{r:55,t:'综合',n:'公办',f:'4000-5000',a:'昆明市呈贡区大学城',d:'双一流，位于昆明。民族学和生态学全国领先。',e:{rt:91,sl:'0.6-1.1万',em:['云南省人民政府','中科院昆明分院','各大中学','云南省建筑设计院']}},
+  'gxu':{r:53,t:'综合',n:'公办',f:'4200-5500',a:'南宁市西乡塘区大学东路100号',d:'普通211，位于南宁。以工科和农林为特色，广西唯一211。',e:{rt:91.5,sl:'0.6-1.1万',em:['广西建工','柳工','各大银行广西分行','广西自治区政府']}},
+  'gzu':{r:60,t:'综合',n:'公办',f:'4100-5200',a:'贵阳市花溪区大学城',d:'普通211，位于贵阳。大数据和农林有特色，贵州省最高学府。',e:{rt:90,sl:'0.6-1.0万',em:['贵州省人民政府','贵州茅台','中国天眼','各大中学']}},
+  'haerbin_eng':{r:54,t:'理工',n:'公办',f:'4000-5500',a:'哈尔滨市南岗区南通大街145号',d:'普通211，国防七子之一，位于哈尔滨。船舶与海洋工程全国第一。',e:{rt:94,sl:'0.9-1.5万',em:['中国船舶','中船重工','华为','中兴','哈尔滨电气']}},
+  'szu':{r:56,t:'综合',n:'公办',f:'5500-7000',a:'深圳市南山区南海大道3688号',d:'双一流，位于深圳。依托深圳区位优势发展迅猛，计算机和电子信息热门。',e:{rt:95.5,sl:'1.1-1.8万',em:['腾讯','华为','大疆','中兴','平安集团']}},
+  'gdut':{r:58,t:'理工',n:'公办',f:'5000-6000',a:'广州市番禺区大学城外环西路100号',d:'普通本科，位于广州。广东省重点建设，工科实力在双非中领先。',e:{rt:93.5,sl:'0.8-1.3万',em:['华为','格力','广汽','各大IT企业','南方电网']}},
+  'scnu':{r:57,t:'师范',n:'公办',f:'4560-5800',a:'广州市天河区中山大道西55号',d:'普通211，位于广州。华南地区师范教育重镇，心理学实力突出。',e:{rt:93,sl:'0.7-1.3万',em:['广东各大中学','华南师大附属学校','各大互联网公司','广州市教育局']}},
+  'gd_med':{r:59,t:'医学',n:'公办',f:'5000-7000',a:'广州市白云区沙太南路1023号',d:'普通本科，位于广州。原第一军医大学，临床医学实力较强。',e:{rt:95,sl:'0.9-1.5万',em:['南方医院','广东省人民医院','广东各大三甲医院','医药企业']}},
+  'hunnu':{r:61,t:'师范',n:'公办',f:'4000-5500',a:'长沙市岳麓区麓山路36号',d:'普通211，位于长沙。湖南省师范教育重镇，文科有传统优势。',e:{rt:91,sl:'0.6-1.1万',em:['湖南各大中学','湖南师大附属学校','湖南省教育厅','各大教育培训机构']}},
+  'hebut':{r:62,t:'理工',n:'公办',f:'4500-5500',a:'天津市北辰区西平道5340号',d:'普通211，位于天津。河北省唯一211，工科有特色。',e:{rt:92,sl:'0.8-1.3万',em:['天津各大制造企业','河北省各大企业','国家电网','中建']}},
+  'ahust':{r:65,t:'综合',n:'公办',f:'4200-5500',a:'合肥市蜀山区九龙路111号',d:'普通211，位于合肥。文史见长，计算机近年发展较快。',e:{rt:91,sl:'0.7-1.2万',em:['安徽省人民政府','科大讯飞','江淮汽车','各大中学']}},
+  'tyut':{r:64,t:'理工',n:'公办',f:'4000-5500',a:'太原市万柏林区迎泽西大街79号',d:'普通211，位于太原。山西省唯一211，矿业和机械有特色。',e:{rt:90.5,sl:'0.7-1.1万',em:['山西焦煤','太重集团','国家电网山西','各大煤矿企业']}},
+  'hebau':{r:90,t:'农林',n:'公办',f:'3500-5000',a:'哈尔滨市香坊区长江路600号',d:'普通211，位于哈尔滨。以农学为特色，乳品科学全国领先。',e:{rt:88,sl:'0.5-1.0万',em:['中粮集团','北大荒集团','完达山乳业','各大食品企业']}},
+  'hbut':{r:75,t:'理工',n:'公办',f:'4000-5200',a:'武汉市洪山区南李路28号',d:'普通本科，位于武汉。工科为主，在湖北省属高校中实力较强。',e:{rt:90,sl:'0.6-1.1万',em:['东风汽车','中铁','湖北省各大制造企业','IT外包企业']}},
+  'cslg':{r:72,t:'理工',n:'公办',f:'4500-5500',a:'长沙市天心区万家丽南路960号',d:'普通本科，位于长沙。交通和电力特色，湖南省属重点。',e:{rt:91,sl:'0.7-1.2万',em:['国家电网湖南','中铁','中建','三一重工','湖南省交通厅']}},
+  'cqut':{r:80,t:'理工',n:'公办',f:'4500-5600',a:'重庆市南岸区崇文路2号',d:'普通本科，位于重庆。通信和计算机在西南地区有影响力。',e:{rt:91.5,sl:'0.7-1.3万',em:['三大运营商重庆','长安汽车','华为','重庆各大IT企业']}},
+  'xaut':{r:82,t:'理工',n:'公办',f:'4500-5500',a:'西安市碑林区金花南路5号',d:'普通本科，位于西安。水利水电特色，西北地区重要工科院校。',e:{rt:89,sl:'0.6-1.0万',em:['国家电网','中铁','陕西各大制造企业','西安高新区企业']}},
+  'qdu':{r:74,t:'综合',n:'公办',f:'4400-5500',a:'青岛市崂山区宁夏路308号',d:'普通本科，位于青岛。医学实力在山东省属高校中领先。',e:{rt:91,sl:'0.7-1.2万',em:['青大附属医院','海尔','海信','青岛港','各大药企']}},
+  'ahstc':{r:100,t:'理工',n:'公办',f:'4290-5200',a:'淮南市田家庵区舜耕中路168号',d:'普通本科，位于淮南。矿业和爆破工程有特色。',e:{rt:87,sl:'0.6-1.0万',em:['淮南矿业','中铁','中建','安徽各大制造企业']}},
+  'hbust':{r:108,t:'理工',n:'公办',f:'4000-5200',a:'石家庄市裕华区裕翔街26号',d:'普通本科，位于石家庄。化工和制药有特色。',e:{rt:86.5,sl:'0.5-1.0万',em:['石药集团','华北制药','河北省各大企业','IT外包企业']}},
+  'hynu':{r:130,t:'师范',n:'公办',f:'3800-5000',a:'衡阳市珠晖区衡花路16号',d:'普通本科，位于衡阳。师范教育为主，湖南地方基础教育的摇篮。',e:{rt:85,sl:'0.5-0.9万',em:['湖南各地中学','教育培训机构','地方公务员','中小学教师']}},
+  'zzul':{r:115,t:'理工',n:'公办',f:'4400-5500',a:'郑州市高新区科学大道136号',d:'普通本科，位于郑州。轻工和食品有特色。',e:{rt:86,sl:'0.5-1.0万',em:['河南省各大制造企业','食品企业','IT企业','地方公务员']}},
+  'gxnu':{r:110,t:'师范',n:'公办',f:'3800-5000',a:'桂林市七星区育才路15号',d:'普通本科，位于桂林。广西师范教育的主力军。',e:{rt:84,sl:'0.5-0.9万',em:['广西各地中学','教育培训机构','桂林旅游局','地方公务员']}},
+  'ldu':{r:125,t:'综合',n:'公办',f:'4000-5000',a:'烟台市芝罘区红旗中路186号',d:'普通本科，位于烟台。师范教育传承，服务胶东地区。',e:{rt:84,sl:'0.5-0.9万',em:['烟台各地中学','富士康烟台','教育培训机构','地方公务员']}},
+  'xxu':{r:200,t:'综合',n:'公办',f:'3700-4800',a:'新乡市红旗区金穗大道191号',d:'普通本科，位于新乡。地方性应用型本科院校。',e:{rt:82,sl:'0.4-0.8万',em:['新乡各地中小学','地方企业','教育培训机构','地方公务员']}},
+  'hbnub':{r:145,t:'理工',n:'公办',f:'4000-5000',a:'黄石市下陆区桂林北路16号',d:'普通本科，位于黄石。湖北省属应用型本科，工科为主。',e:{rt:84,sl:'0.5-0.9万',em:['黄石各大企业','武汉城市圈企业','IT外包','地方公务员']}},
+  'cdu':{r:85,t:'综合',n:'公办',f:'4100-5000',a:'成都市龙泉驿区成洛大道2025号',d:'普通本科，位于成都。成都市重点建设，药学有一定特色。',e:{rt:89,sl:'0.6-1.1万',em:['成都各大IT企业','四川省人民医院','成都药企','地方公务员']}},
+  'xhu':{r:95,t:'综合',n:'公办',f:'4100-5000',a:'成都市郫都区红光大道9999号',d:'普通本科，位于成都。四川省属重点，以工科为主。',e:{rt:88.5,sl:'0.6-1.1万',em:['成都各大制造企业','华为成都研究所','地方公务员','IT企业']}},
+  'cdu_tech':{r:120,t:'理工',n:'公办',f:'4100-5000',a:'成都市郫都区中信大道二段1号',d:'普通本科，位于成都。以电子信息为特色，应用型工科院校。',e:{rt:88,sl:'0.6-1.1万',em:['成都高新区企业','富士康成都','IT外包','地方制造企业']}},
+  'cdnu':{r:135,t:'师范',n:'公办',f:'3700-4800',a:'成都市温江区海科路东段99号',d:'普通本科，位于成都。四川省师范教育重要基地。',e:{rt:85.5,sl:'0.5-0.9万',em:['四川各地中小学','教育培训机构','成都私立学校','地方公务员']}},
+  'suse':{r:98,t:'理工',n:'公办',f:'4100-5000',a:'自贡市自流井区汇兴路519号',d:'普通本科，位于自贡。以轻化工为特色，有白酒学院。',e:{rt:86,sl:'0.5-1.0万',em:['五粮液','泸州老窖','自贡各大企业','化工企业']}},
+  'mynu':{r:140,t:'师范',n:'公办',f:'3700-4800',a:'绵阳市涪城区仙人路一段30号',d:'普通本科，位于绵阳。川北地区师范教育主力。',e:{rt:84,sl:'0.5-0.9万',em:['绵阳各地中小学','教育培训机构','长虹','地方公务员']}},
+  'njtc':{r:150,t:'师范',n:'公办',f:'3700-4800',a:'内江市东兴区红桥街1号',d:'普通本科，位于内江。服务川南地区的师范类院校。',e:{rt:83,sl:'0.5-0.8万',em:['内江及周边中小学','教育培训机构','地方企业','地方公务员']}},
+  'lstc':{r:155,t:'师范',n:'公办',f:'3700-4800',a:'乐山市市中区滨河路778号',d:'普通本科，位于乐山。师范教育为主，服务川西南地区。',e:{rt:82.5,sl:'0.4-0.8万',em:['乐山各地中小学','教育培训机构','乐山文旅企业','地方公务员']}},
+  'yibinu':{r:148,t:'综合',n:'公办',f:'3700-4800',a:'宜宾市翠屏区酒圣路8号',d:'普通本科，位于宜宾。近年来发展较快，与宜宾产业结合紧密。',e:{rt:84,sl:'0.5-0.9万',em:['五粮液','宜宾各大企业','地方中小学','地方公务员']}},
+  'scwl':{r:160,t:'综合',n:'公办',f:'3700-4800',a:'达州市通川区塔石路519号',d:'普通本科，位于达州。服务川东北地区的应用型本科。',e:{rt:82,sl:'0.4-0.8万',em:['达州各地中小学','地方企业','教育培训机构','地方公务员']}},
+  'pzhxy':{r:158,t:'综合',n:'公办',f:'3700-4800',a:'攀枝花市东区机场路10号',d:'普通本科，位于攀枝花。以材料和钒钛为特色。',e:{rt:82,sl:'0.4-0.8万',em:['攀钢','攀枝花各地中小学','地方企业','地方公务员']}},
+  'xctc':{r:165,t:'综合',n:'公办',f:'3700-4800',a:'西昌市安宁镇学府路24号',d:'普通本科，位于西昌。服务凉山及攀西地区的应用型本科。',e:{rt:80,sl:'0.4-0.8万',em:['凉山各地中小学','地方企业','地方政府','农业相关企业']}},
+  'scun':{r:170,t:'民族',n:'公办',f:'3700-4800',a:'康定市姑咱镇文化路4号',d:'普通本科，位于康定。服务四川民族地区的本科院校。',e:{rt:78,sl:'0.4-0.7万',em:['甘孜各地中小学','地方政府','民族地区公务员','文化旅游企业']}},
+  'abtc':{r:175,t:'师范',n:'公办',f:'3700-4800',a:'汶川县水磨镇阿师路',d:'普通本科，位于汶川。服务阿坝藏族羌族自治州。',e:{rt:77,sl:'0.4-0.7万',em:['阿坝各地中小学','地方政府','民族地区公务员','文化旅游企业']}},
+  'cdneusoft':{r:180,t:'理工',n:'民办',f:'16000-20000',a:'成都市都江堰市青城山镇东软大道1号',d:'民办本科，位于成都。以IT和数字媒体为特色。',e:{rt:85,sl:'0.5-1.0万',em:['成都IT外包企业','数字媒体公司','游戏公司','互联网创业企业']}},
+  'scgs':{r:185,t:'专科',n:'民办',f:'14000-18000',a:'成都市郫都区团结镇学院街65号',d:'民办专科，位于成都。经管和工科并重，以应用技能培养为主。',e:{rt:82,sl:'0.4-0.7万',em:['成都中小企业','民营企业','IT外包','教育机构']}},
+  'scit':{r:195,t:'专科',n:'民办',f:'13000-17000',a:'德阳市罗江区大学路59号',d:'民办专科，位于德阳。以工科应用型人才培养为主。',e:{rt:80,sl:'0.4-0.7万',em:['德阳装备制造企业','东汽','地方中小企业','IT企业']}},
+  'geely_cd':{r:190,t:'专科',n:'民办',f:'15000-19000',a:'成都市简阳市石盘镇',d:'民办专科，位于成都。吉利集团创办，汽车相关专业有特色。',e:{rt:82,sl:'0.4-0.7万',em:['吉利汽车','领克','成都汽车产业链企业','IT企业']}},
+  'mdu':{r:198,t:'专科',n:'民办',f:'13000-17000',a:'绵阳市游仙区三星路11号',d:'民办专科，位于绵阳。工科和经管为主，培养应用型人才。',e:{rt:79,sl:'0.4-0.7万',em:['绵阳中小企业','长虹配套企业','IT外包','教育机构']}},
+  'xapeihua':{r:172,t:'综合',n:'民办',f:'15000-20000',a:'西安市长安区常宁大街888号',d:'民办本科，位于西安。经管和文法有特色。',e:{rt:81,sl:'0.4-0.8万',em:['西安中小企业','民营企业','教育培训机构','文化传媒公司']}},
+  'zzgs':{r:178,t:'综合',n:'民办',f:'14000-18000',a:'郑州市郑东新区前程大道169号',d:'民办本科，位于郑州。以经管和工科为主。',e:{rt:80,sl:'0.5-0.9万',em:['郑州中小企业','民营企业','IT企业','教育机构']}},
+  'whsw':{r:168,t:'理工',n:'民办',f:'15000-20000',a:'武汉市新洲区阳逻经济开发区',d:'民办本科，位于武汉。以生物和制药为特色。',e:{rt:83,sl:'0.5-0.9万',em:['武汉生物医药企业','药企','生物科技公司','检测机构']}},
+  'nclg':{r:176,t:'综合',n:'民办',f:'14000-18000',a:'南昌市昌北经开区英雄大道901号',d:'民办本科，位于南昌。以工科和应用型专业为主。',e:{rt:79,sl:'0.5-0.8万',em:['南昌中小企业','IT企业','制造企业','教育机构']}},
+  'qd_binhai':{r:182,t:'综合',n:'民办',f:'14000-18000',a:'青岛市黄岛区嘉陵江西路425号',d:'民办本科，位于青岛。依托青岛区位优势发展。',e:{rt:80,sl:'0.5-0.9万',em:['青岛中小企业','IT企业','旅游酒店','教育培训']}},
+  'ynjjgl':{r:205,t:'专科',n:'民办',f:'12000-16000',a:'昆明市安宁市职教园区',d:'民办专科，位于昆明。以经管类专业为主，培养应用技能人才。',e:{rt:78,sl:'0.4-0.7万',em:['昆明中小企业','民营企业','教育培训机构','地方服务行业']}},
+  'gxwgy':{r:210,t:'专科',n:'民办',f:'12000-16000',a:'南宁市青秀区五合大道19号',d:'民办专科，位于南宁。外语和东南亚语种有特色。',e:{rt:77,sl:'0.4-0.7万',em:['外贸企业','跨境电商','旅游公司','教育培训机构']}},
+  'hubei_sw':{r:195,t:'专科',n:'民办',f:'13000-17000',a:'武汉市洪山区雄楚大道634号',d:'民办专科，位于武汉。经管和设计类专业为主。',e:{rt:79,sl:'0.4-0.7万',em:['武汉中小企业','商贸企业','设计公司','教育培训机构']}},
+  'gdtc':{r:160,t:'师范',n:'公办',f:'4200-5500',a:'广州市天河区中山大道西293号',d:'普通本科，位于广州。广东省属师范院校，服务广东职业教育。',e:{rt:86,sl:'0.5-1.0万',em:['广东各地中小学','职业院校','教育培训机构','地方公务员']}},
+  'scvtcc':{r:250,t:'专科',n:'公办',f:'3700-5000',a:'成都市温江区柳台大道东段208号',d:'公办专科，国家示范性高职院校。位于成都，交通建设领域人才培养基地。',e:{rt:95,sl:'0.6-1.0万',em:['四川路桥','中铁二局','成都铁路局','各大交通建设企业']}},
+  'cap':{r:240,t:'专科',n:'公办',f:'4100-5000',a:'成都市龙泉驿区车城东七路699号',d:'公办专科，国家示范性高职院校。位于成都，航空制造和维修领域特色鲜明。',e:{rt:94,sl:'0.6-1.0万',em:['成飞集团','成都航空','各大航空公司','航空维修企业']}},
+  'scac':{r:255,t:'专科',n:'公办',f:'4100-5000',a:'德阳市旌阳区嘉陵江西路4号',d:'公办专科，国家示范性高职院校。位于德阳，建筑类高职全国领先。',e:{rt:93,sl:'0.5-0.9万',em:['华西集团','中建各局','四川路桥','各大建筑企业']}},
+  'cdtc':{r:270,t:'专科',n:'公办',f:'3700-4800',a:'成都市郫都区犀浦镇泰山南街186号',d:'公办专科，位于成都。纺织服装行业老牌院校。',e:{rt:90,sl:'0.4-0.8万',em:['纺织服装企业','检测机构','电商企业','自主创业']}},
+  'cdvtc':{r:260,t:'专科',n:'公办',f:'3700-4800',a:'成都市高新区益州大道北段天益街83号',d:'公办专科，国家骨干高职院校。位于成都，以软件和旅游为特色。',e:{rt:91,sl:'0.5-0.8万',em:['成都IT企业','旅游酒店','医疗机构','电商企业']}},
+  'sptc':{r:265,t:'专科',n:'公办',f:'3700-4800',a:'成都市锦江区静康路536号',d:'公办专科，位于成都。通信和邮政行业特色院校。',e:{rt:92,sl:'0.5-0.9万',em:['三大运营商','中国邮政','通信设备企业','IT企业']}},
+};
+
+// ==================== 全局状态 ====================
+let state = {
+  province: null,
+  score: null,
+  preferredSubject: null,   // '物理' | '历史' | null
+  additionalSubjects: [],   // ['化学', '生物', ...] (3+1+2)  or all 3 subjects (3+3)
+  allResults: [],           // 全部匹配结果
+  filter: 'all',            // 'all' | 'chong' | 'wen' | 'bao'
+  sort: 'score_desc',       // 'score_desc' | 'score_asc' | 'name'
+  searchQuery: '',
+};
+
+// ==================== 初始化 ====================
+document.addEventListener('DOMContentLoaded', () => {
+  initProvinceSelect();
+  bindEvents();
+  updateSearchButton();
+});
+
+function initProvinceSelect() {
+  const select = document.getElementById('provinceSelect');
+  const sortedProvinces = Object.keys(PROVINCES).sort((a, b) => {
+    // 把常见省份排前面
+    const common = ['广东', '北京', '上海', '浙江', '江苏', '山东', '河南', '湖北', '湖南', '四川'];
+    const ai = common.indexOf(a), bi = common.indexOf(b);
+    if (ai !== -1 && bi !== -1) return ai - bi;
+    if (ai !== -1) return -1;
+    if (bi !== -1) return 1;
+    return a.localeCompare(b, 'zh');
+  });
+  sortedProvinces.forEach(name => {
+    const opt = document.createElement('option');
+    opt.value = name;
+    opt.textContent = name;
+    select.appendChild(opt);
+  });
+}
+
+function bindEvents() {
+  document.getElementById('provinceSelect').addEventListener('change', onProvinceChange);
+  document.getElementById('scoreInput').addEventListener('input', onScoreInput);
+  document.getElementById('searchBtn').addEventListener('click', performSearch);
+  document.getElementById('resetBtn').addEventListener('click', resetAll);
+
+  // 监听选科变化
+  document.getElementById('preferredSubjectChecks').addEventListener('change', updateSearchButton);
+  document.getElementById('additionalSubjectChecks').addEventListener('change', updateSearchButton);
+  document.getElementById('artsScienceChecks').addEventListener('change', updateSearchButton);
+}
+
+function onProvinceChange() {
+  const provinceName = document.getElementById('provinceSelect').value;
+  if (!provinceName) {
+    state.province = null;
+    hideSubjectInputs();
+    document.getElementById('tierInfo').classList.remove('show');
+    updateSearchButton();
+    return;
+  }
+  state.province = PROVINCES[provinceName];
+  showSubjectInputs();
+  showTierInfo();
+  updateSearchButton();
+}
+
+function showSubjectInputs() {
+  const type = state.province.type;
+
+  // 首选科目 (3+1+2) 或 文理科选择
+  const preferredGroup = document.getElementById('preferredSubjectGroup');
+  const preferredChecks = document.getElementById('preferredSubjectChecks');
+  const additionalGroup = document.getElementById('additionalSubjectsGroup');
+  const additionalChecks = document.getElementById('additionalSubjectChecks');
+  const artsScienceGroup = document.getElementById('artsScienceGroup');
+  const artsScienceChecks = document.getElementById('artsScienceChecks');
+
+  // 隐藏所有
+  preferredGroup.style.display = 'none';
+  additionalGroup.style.display = 'none';
+  artsScienceGroup.style.display = 'none';
+
+  if (type === '3+1+2') {
+    // 显示首选科目（物理/历史 单选）
+    preferredGroup.style.display = '';
+    preferredChecks.innerHTML = `
+      <label><input type="radio" name="preferred" value="物理"><span>⚡ 物理</span></label>
+      <label><input type="radio" name="preferred" value="历史"><span>📜 历史</span></label>
+    `;
+    // 显示再选科目（4选2，多选）
+    additionalGroup.style.display = '';
+    additionalChecks.innerHTML = `
+      <label><input type="checkbox" name="additional" value="化学"><span>🧪 化学</span></label>
+      <label><input type="checkbox" name="additional" value="生物"><span>🧬 生物</span></label>
+      <label><input type="checkbox" name="additional" value="政治"><span>⚖️ 政治</span></label>
+      <label><input type="checkbox" name="additional" value="地理"><span>🌍 地理</span></label>
+    `;
+  } else if (type === '3+3') {
+    // 3+3 省份：不显示首选科目，显示6选3（复选框）
+    additionalGroup.style.display = '';
+    additionalGroup.querySelector('label').textContent = '📚 选考科目（6选3，可多选）';
+    additionalChecks.innerHTML = `
+      <label><input type="checkbox" name="additional" value="物理"><span>⚡ 物理</span></label>
+      <label><input type="checkbox" name="additional" value="化学"><span>🧪 化学</span></label>
+      <label><input type="checkbox" name="additional" value="生物"><span>🧬 生物</span></label>
+      <label><input type="checkbox" name="additional" value="历史"><span>📜 历史</span></label>
+      <label><input type="checkbox" name="additional" value="政治"><span>⚖️ 政治</span></label>
+      <label><input type="checkbox" name="additional" value="地理"><span>🌍 地理</span></label>
+    `;
+  }
+}
+
+function hideSubjectInputs() {
+  document.getElementById('preferredSubjectGroup').style.display = 'none';
+  document.getElementById('additionalSubjectsGroup').style.display = 'none';
+  document.getElementById('artsScienceGroup').style.display = 'none';
+}
+
+function showTierInfo() {
+  const info = document.getElementById('tierInfo');
+  const p = state.province;
+  if (p.type === '3+1+2') {
+    info.innerHTML = `
+      📊 <strong>${p.name}</strong> · 「3+1+2」模式 ·
+      物理类：本科线 <strong>${p.tiers.physics.benke}</strong> 分 | 特控线 <strong>${p.tiers.physics.tekong}</strong> 分 ·
+      历史类：本科线 <strong>${p.tiers.history.benke}</strong> 分 | 特控线 <strong>${p.tiers.history.tekong}</strong> 分
+      <br><small style="color:#5f6368;">特控线 ≈ 原一本线，本科线 ≈ 原二本线 | 数据来源：2025年各省教育考试院公开信息</small>
+    `;
+  } else if (p.type === '3+3') {
+    info.innerHTML = `
+      📊 <strong>${p.name}</strong> · 「3+3」模式 ·
+      本科线 <strong>${p.tiers.unified.benke}</strong> 分 | 特控线 <strong>${p.tiers.unified.tekong}</strong> 分
+      <br><small style="color:#5f6368;">特控线 ≈ 原一本线，本科线 ≈ 原二本线 | 数据来源：2025年各省教育考试院公开信息</small>
+    `;
+  }
+  info.classList.add('show');
+}
+
+function onScoreInput() {
+  const val = parseInt(document.getElementById('scoreInput').value);
+  state.score = isNaN(val) ? null : val;
+  updateSearchButton();
+}
+
+function collectSubjects() {
+  const p = state.province;
+  if (!p) return { preferred: null, additional: [] };
+
+  if (p.type === '3+1+2') {
+    const prefRadio = document.querySelector('input[name="preferred"]:checked');
+    const preferred = prefRadio ? prefRadio.value : null;
+    const additionalChecks = document.querySelectorAll('#additionalSubjectChecks input[type="checkbox"]:checked');
+    const additional = Array.from(additionalChecks).map(cb => cb.value);
+    return { preferred, additional };
+  } else if (p.type === '3+3') {
+    const allChecks = document.querySelectorAll('#additionalSubjectChecks input[type="checkbox"]:checked');
+    const allSubjects = Array.from(allChecks).map(cb => cb.value);
+    return { preferred: null, additional: allSubjects };
+  }
+  return { preferred: null, additional: [] };
+}
+
+function updateSearchButton() {
+  const btn = document.getElementById('searchBtn');
+  const p = state.province;
+  const score = state.score;
+  if (!p || score === null || score < 0 || score > 750) {
+    btn.disabled = true;
+    return;
+  }
+
+  if (p.type === '3+1+2') {
+    const pref = document.querySelector('input[name="preferred"]:checked');
+    if (!pref) { btn.disabled = true; return; }
+  } else if (p.type === '3+3') {
+    const checks = document.querySelectorAll('#additionalSubjectChecks input[type="checkbox"]:checked');
+    if (checks.length === 0) { btn.disabled = true; return; }
+  }
+
+  btn.disabled = false;
+}
+
+// ==================== 核心匹配逻辑 ====================
+function getTierLine(province, preferredSubject) {
+  if (province.type === '3+1+2') {
+    if (preferredSubject === '物理') return province.tiers.physics;
+    if (preferredSubject === '历史') return province.tiers.history;
+    // fallback: use the average
+    return {
+      benke: Math.round((province.tiers.physics.benke + province.tiers.history.benke) / 2),
+      tekong: Math.round((province.tiers.physics.tekong + province.tiers.history.tekong) / 2),
+    };
+  } else if (province.type === '3+3') {
+    return province.tiers.unified;
+  }
+  return null;
+}
+
+function groupMatchesSubjectRequirements(group, preferredSubject, additionalSubjects) {
+  // 检查首选科目
+  if (group.preferred !== '不限') {
+    if (preferredSubject && group.preferred !== preferredSubject) {
+      return false;
+    }
+    // For 3+3 provinces with no preferred subject, check if group's preferred is in additional subjects
+    if (!preferredSubject) {
+      if (!additionalSubjects.includes(group.preferred)) {
+        return false;
+      }
+    }
+  }
+
+  // 检查再选科目
+  if (group.additional && group.additional.length > 0) {
+    for (const req of group.additional) {
+      if (!additionalSubjects.includes(req)) {
+        return false;
+      }
+    }
+  }
+
+  return true;
+}
+
+function getCategory(userScore, referenceScore) {
+  const diff = userScore - referenceScore;
+  if (diff >= 10) return 'bao';      // 高出10分以上 = 保底
+  if (diff >= -3) return 'wen';      // 差3分以内到高出10分 = 稳妥
+  if (diff >= -20) return 'chong';   // 差20分到差3分 = 冲刺
+  return null;                        // 差太多，不显示
+}
+
+function getCategoryLabel(cat) {
+  if (cat === 'chong') return '🔴 冲刺';
+  if (cat === 'wen') return '🟡 稳妥';
+  if (cat === 'bao') return '🟢 保底';
+  return '';
+}
+
+function performSearch() {
+  const p = state.province;
+  const score = state.score;
+  const { preferred, additional } = collectSubjects();
+
+  if (!p || score === null) return;
+
+  // 获取批次线
+  const tierLine = getTierLine(p, preferred);
+  if (!tierLine) return;
+
+  const tekong = tierLine.tekong;
+  const benke = tierLine.benke;
+
+  // 更新全局状态
+  state.preferredSubject = preferred;
+  state.additionalSubjects = additional;
+  state.allResults = [];
+  state.filter = 'all';
+  state.searchQuery = '';
+
+  // 遍历所有高校
+  for (const uni of UNIVERSITIES) {
+    uni.groups.forEach((group, gi) => {
+      // 检查选科要求
+      if (!groupMatchesSubjectRequirements(group, preferred, additional)) {
+        return;
+      }
+
+      // 计算参考分数：特控线 + 偏移
+      const referenceScore = Math.round(tekong + group.offset);
+
+      // 判断冲稳保
+      const category = getCategory(score, referenceScore);
+      if (!category) return; // 分数差距太大
+
+      // 专科院校仅对本科线以下或刚过线的考生显示
+      if (uni.tier === '专科' && score >= benke + 15) return;
+
+      // 计算差值
+      const diff = score - referenceScore;
+
+      state.allResults.push({
+        university: uni,
+        group: group,
+        groupCode: String(gi + 1).padStart(2, '0'),
+        referenceScore: referenceScore,
+        category: category,
+        diff: diff,
+        tekong: tekong,
+        benke: benke,
+      });
+    });
+  }
+
+  // 排序：按参考分数降序
+  state.allResults.sort((a, b) => b.referenceScore - a.referenceScore);
+
+  // 显示结果
+  document.getElementById('introState').style.display = 'none';
+  document.getElementById('resultsContent').style.display = '';
+  renderResults();
+}
+
+function renderResults() {
+  const filtered = getFilteredResults();
+  const toolbar = document.getElementById('resultsToolbar');
+  const grid = document.getElementById('resultsGrid');
+  const empty = document.getElementById('emptyState');
+  const warnDiv = document.getElementById('scoreWarning');
+
+  // 检查是否需要显示低分警告
+  if (state.allResults.length > 0) {
+    const benke = state.allResults[0].benke;
+    const diffFromBenke = state.score - benke;
+    if (diffFromBenke < 0) {
+      warnDiv.style.display = '';
+      warnDiv.innerHTML = '⚠️ <strong>注意：你的分数（' + state.score + '分）低于本科线（' + benke + '分）' + Math.abs(diffFromBenke) + '分。</strong><br>本科院校录取机会较小，以下结果中的"冲刺"院校可尝试填报，"保底"院校可作为重点考虑对象。<br>建议同时关注<strong>专科批次</strong>和<strong>征集志愿</strong>信息，具体以省教育考试院官方发布为准。';
+    } else if (diffFromBenke >= 0 && diffFromBenke <= 15) {
+      warnDiv.style.display = '';
+      warnDiv.innerHTML = '💡 <strong>提示：你的分数（' + state.score + '分）紧贴本科线（' + benke + '分），仅高出' + diffFromBenke + '分。</strong><br>建议"冲稳保"志愿梯度合理分布，多关注往年录取分接近本科线的院校，并适当填报保底学校。';
+    } else {
+      warnDiv.style.display = 'none';
+    }
+  } else {
+    warnDiv.style.display = 'none';
+  }
+
+  // 更新工具栏
+  const all = state.allResults;
+  const chongCount = all.filter(r => r.category === 'chong').length;
+  const wenCount = all.filter(r => r.category === 'wen').length;
+  const baoCount = all.filter(r => r.category === 'bao').length;
+
+  toolbar.innerHTML = `
+    <div class="toolbar-left">
+      <span style="font-weight:700;font-size:14px;">共 ${all.length} 个专业组</span>
+      <span class="stat-badge all ${state.filter === 'all' ? 'active' : ''}" data-filter="all">全部 ${all.length}</span>
+      <span class="stat-badge chong ${state.filter === 'chong' ? 'active' : ''}" data-filter="chong">🔴 冲刺 ${chongCount}</span>
+      <span class="stat-badge wen ${state.filter === 'wen' ? 'active' : ''}" data-filter="wen">🟡 稳妥 ${wenCount}</span>
+      <span class="stat-badge bao ${state.filter === 'bao' ? 'active' : ''}" data-filter="bao">🟢 保底 ${baoCount}</span>
+      <input type="text" class="search-input" id="searchInput" placeholder="🔍 搜索学校或专业..." value="${escapeHtml(state.searchQuery)}">
+    </div>
+    <div>
+      <select class="sort-select" id="sortSelect">
+        <option value="score_desc" ${state.sort === 'score_desc' ? 'selected' : ''}>📊 参考分 ↓</option>
+        <option value="score_asc" ${state.sort === 'score_asc' ? 'selected' : ''}>📊 参考分 ↑</option>
+        <option value="name" ${state.sort === 'name' ? 'selected' : ''}>🔤 学校名称</option>
+        <option value="diff" ${state.sort === 'diff' ? 'selected' : ''}>📈 分差（你高一保底多）</option>
+      </select>
+    </div>
+  `;
+
+  // 绑定工具栏事件
+  toolbar.querySelectorAll('.stat-badge').forEach(badge => {
+    badge.addEventListener('click', () => {
+      state.filter = badge.dataset.filter;
+      renderResults();
+    });
+  });
+  document.getElementById('searchInput').addEventListener('input', (e) => {
+    state.searchQuery = e.target.value;
+    renderResults();
+  });
+  document.getElementById('sortSelect').addEventListener('change', (e) => {
+    state.sort = e.target.value;
+    renderResults();
+  });
+
+  // 渲染卡片
+  if (filtered.length === 0) {
+    grid.innerHTML = '';
+    empty.style.display = '';
+  } else {
+    empty.style.display = 'none';
+    grid.innerHTML = filtered.map(r => createCard(r)).join('');
+  }
+
+  // 滚动到结果
+  document.getElementById('resultsContent').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function getFilteredResults() {
+  let results = [...state.allResults];
+
+  // 按冲稳保筛选
+  if (state.filter !== 'all') {
+    results = results.filter(r => r.category === state.filter);
+  }
+
+  // 按搜索词筛选
+  if (state.searchQuery.trim()) {
+    const q = state.searchQuery.trim().toLowerCase();
+    results = results.filter(r =>
+      r.university.name.toLowerCase().includes(q) ||
+      r.group.name.toLowerCase().includes(q) ||
+      r.university.city.toLowerCase().includes(q)
+    );
+  }
+
+  // 排序
+  if (state.sort === 'score_desc') {
+    results.sort((a, b) => b.referenceScore - a.referenceScore);
+  } else if (state.sort === 'score_asc') {
+    results.sort((a, b) => a.referenceScore - b.referenceScore);
+  } else if (state.sort === 'name') {
+    results.sort((a, b) => a.university.name.localeCompare(b.university.name, 'zh'));
+  } else if (state.sort === 'diff') {
+    results.sort((a, b) => b.diff - a.diff);
+  }
+
+  return results;
+}
+
+function createCard(result) {
+  const uni = result.university;
+  const group = result.group;
+  const cat = result.category;
+
+  // 学校层次标签 — 多重身份同时显示
+  const tierBadges = [];
+  if (uni.tier === 'c9') {
+    tierBadges.push({l:'C9',c:'c9'},{l:'985',c:'t985'},{l:'211',c:'t211'},{l:'双一流',c:'double-first'});
+  } else if (uni.tier === '985') {
+    tierBadges.push({l:'985',c:'t985'},{l:'211',c:'t211'},{l:'双一流',c:'double-first'});
+  } else if (uni.tier === '211') {
+    tierBadges.push({l:'211',c:'t211'},{l:'双一流',c:'double-first'});
+  } else if (uni.tier === '双一流') {
+    tierBadges.push({l:'双一流',c:'double-first'});
+  } else if (uni.tier === '专科') {
+    tierBadges.push({l:'专科',c:'zk'});
+  } else {
+    tierBadges.push({l:'本科',c:'regular'});
+  }
+  const tierHtml = tierBadges.map(b => '<span class="card-tier ' + b.c + '">' + b.l + '</span>').join('');
+
+  // 选科要求文字
+  let subjectReq = '';
+  if (group.preferred === '物理') subjectReq = '必选物理';
+  else if (group.preferred === '历史') subjectReq = '必选历史';
+  else subjectReq = '不限首选';
+
+  if (group.additional && group.additional.length > 0) {
+    subjectReq += ' + ' + group.additional.join('、');
+  }
+
+  // 分差文字
+  let diffText = '';
+  if (result.diff > 0) diffText = `+${result.diff} 分`;
+  else if (result.diff === 0) diffText = '持平';
+  else diffText = `${result.diff} 分`;
+
+  // 查详情
+  const detail = UNI_DETAILS[uni.id] || {};
+  const natureTag = detail.n === '民办'
+    ? '<span class="card-nature private">民办</span>'
+    : (detail.n === '公办' ? '<span class="card-nature public">公办</span>' : '');
+
+  return `
+    <div class="result-card ${cat}" onclick="showDetail('${uni.id.replace(/'/g, "\\'")}')" style="cursor:pointer;" title="点击查看${escapeHtml(uni.name)}详情">
+      <div class="card-header">
+        <span class="card-uni">${escapeHtml(uni.name)}</span>
+        <span class="tier-badges">${tierHtml}</span>
+        ${natureTag}
+      </div>
+      <div class="card-group-name"><span style="display:inline-block;background:#e8f0fe;color:#1a56db;padding:1px 8px;border-radius:4px;font-weight:700;font-size:12px;margin-right:6px;">${result.groupCode}</span> ${escapeHtml(group.name)}</div>
+      <div class="card-info">
+        <span class="card-tag">📍 ${escapeHtml(uni.city)}</span>
+        <span class="card-tag score">📊 2025参考：${result.referenceScore} 分</span>
+        <span class="card-tag subjects">📋 ${subjectReq}</span>
+        ${detail.f ? '<span class="card-tag fee">💰 ' + detail.f + '元/年</span>' : ''}
+      </div>
+      <div class="card-footer">
+        <span class="card-category ${cat}">${getCategoryLabel(cat)}</span>
+        <span class="card-diff">与你分数的差值：<strong>${diffText}</strong> <span style="color:#1a73e8;font-size:11px;">▶ 详情</span></span>
+      </div>
+    </div>
+  `;
+}
+
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+// ==================== 详情弹窗 ====================
+function showDetail(uniId) {
+  const uni = UNIVERSITIES.find(u => u.id === uniId);
+  if (!uni) return;
+  const detail = UNI_DETAILS[uniId] || null;
+  const p = state.province;
+
+  // 获取批次线
+  const tierLine = (() => {
+    if (!p) return { tekong: 500, benke: 430 };
+    if (p.type === '3+1+2') {
+      if (state.preferredSubject === '物理') return p.tiers.physics;
+      if (state.preferredSubject === '历史') return p.tiers.history;
+      return { tekong: Math.round((p.tiers.physics.tekong + p.tiers.history.tekong)/2), benke: Math.round((p.tiers.physics.benke + p.tiers.history.benke)/2) };
+    }
+    return p.tiers.unified;
+  })();
+
+  // 计算该校所有专业组在当前省份的参考分
+  const groupScores = uni.groups
+    .map((g, i) => {
+      const ref = Math.round(tierLine.tekong + g.offset);
+      const diff = state.score ? state.score - ref : null;
+      let cat = null;
+      if (diff !== null) {
+        if (diff >= 10) cat = 'bao';
+        else if (diff >= -3) cat = 'wen';
+        else if (diff >= -20) cat = 'chong';
+      }
+      // 选科要求文字
+      let sr = g.preferred === '物理' ? '必选物理' : g.preferred === '历史' ? '必选历史' : '不限首选';
+      if (g.additional && g.additional.length > 0) sr += '+' + g.additional.join('/');
+      return { ...g, ref, diff, cat, sr, code: String(i + 1).padStart(2, '0') };
+    })
+    .sort((a, b) => b.ref - a.ref);
+
+  // 筛选在当前选科下可报的专业组（优先使用搜索时的状态）
+  const myPref = state.preferredSubject || collectSubjects().preferred;
+  const myAdd = state.additionalSubjects.length > 0 ? state.additionalSubjects : collectSubjects().additional;
+  const matchedGroups = groupScores.filter(g =>
+    groupMatchesSubjectRequirements(g, myPref, myAdd)
+  );
+
+  // 层次标签
+  let tierLabel = '', tierBg = '';
+  if (uni.tier === 'c9') { tierLabel = 'C9联盟'; tierBg = '#fef3c7'; }
+  else if (uni.tier === '985') { tierLabel = '985工程'; tierBg = '#dbeafe'; }
+  else if (uni.tier === '211') { tierLabel = '211工程'; tierBg = '#e0e7ff'; }
+  else if (uni.tier === '双一流') { tierLabel = '双一流'; tierBg = '#fce7f3'; }
+  else if (uni.tier === '专科') { tierLabel = '专科院校'; tierBg = '#fef2f2'; }
+  else { tierLabel = '普通本科'; tierBg = '#f3f4f6'; }
+
+  let html = '';
+  html += '<button class="modal-close" onclick="closeModal()">✕</button>';
+  html += '<div class="modal-header">';
+  html += '<h2>' + escapeHtml(uni.name) + '</h2>';
+  html += '<div class="meta">';
+  html += '<span>📍 ' + escapeHtml(uni.city) + '</span>';
+  html += '<span style="display:inline-block;padding:2px 10px;border-radius:10px;background:' + tierBg + ';color:#374151;font-weight:600;">' + tierLabel + '</span>';
+  if (detail) {
+    html += '<span>🏫 ' + detail.t + '类</span>';
+    html += '<span>🏆 全国排名约第' + detail.r + '位</span>';
+    if (detail.n) {
+      const nColor = detail.n === '民办' ? '#fff7ed' : '#e6f4ea';
+      const nText = detail.n === '民办' ? '#c2410c' : '#188038';
+      html += '<span style="display:inline-block;padding:2px 10px;border-radius:10px;background:' + nColor + ';color:' + nText + ';font-weight:600;">' + detail.n + '</span>';
+    }
+  }
+  html += '</div>';
+  // 学校信息条
+  html += '<div style="padding:10px 24px;background:#f9fafb;display:flex;flex-wrap:wrap;gap:16px;font-size:13px;color:#4b5563;">';
+  if (detail.a) html += '<span>📍 <strong>地址：</strong>' + escapeHtml(detail.a) + '</span>';
+  if (detail.f) html += '<span>💰 <strong>学费：</strong>' + detail.f + ' 元/年</span>';
+  if (detail.n) html += '<span>🏛️ <strong>性质：</strong>' + detail.n + '</span>';
+  html += '</div></div>';
+
+  html += '<div class="modal-body">';
+
+  // 学校简介
+  if (detail) {
+    html += '<h3>📖 学校简介</h3>';
+    html += '<p class="desc">' + escapeHtml(detail.d) + '</p>';
+  }
+
+  // 在你的选科下可报专业组
+  if (matchedGroups.length > 0) {
+    html += '<h3>📊 你当前选科可报的专业组 (' + escapeHtml(p ? p.name : '') + ' · 参考2025年)</h3>';
+    html += '<table class="detail-table"><thead><tr><th>编号</th><th>专业组</th><th>2025参考分</th><th>选科要求</th><th>分类</th></tr></thead><tbody>';
+    for (const g of matchedGroups) {
+      let catBadge = '';
+      if (g.cat === 'chong') catBadge = '<span style="background:#fce8e6;color:#d93025;padding:2px 8px;border-radius:10px;font-weight:600;">🔴 冲刺</span>';
+      else if (g.cat === 'wen') catBadge = '<span style="background:#fef7e0;color:#e37400;padding:2px 8px;border-radius:10px;font-weight:600;">🟡 稳妥</span>';
+      else if (g.cat === 'bao') catBadge = '<span style="background:#e6f4ea;color:#188038;padding:2px 8px;border-radius:10px;font-weight:600;">🟢 保底</span>';
+      else catBadge = '<span style="color:#9ca3af;">—</span>';
+      html += '<tr><td style="font-weight:700;color:#1a56db;">' + g.code + '</td><td><strong>' + escapeHtml(g.name) + '</strong></td><td>' + g.ref + ' 分</td><td class="tag-cell">' + g.sr + '</td><td>' + catBadge + '</td></tr>';
+    }
+    html += '</tbody></table>';
+  }
+
+  // 该大学全部专业组
+  html += '<h3>📋 ' + escapeHtml(uni.name) + '全部专业组 (' + escapeHtml(p ? p.name : '') + ' · 参考2025年)</h3>';
+  html += '<table class="detail-table"><thead><tr><th>编号</th><th>专业组</th><th>2025参考分</th><th>选科要求</th></tr></thead><tbody>';
+  for (const g of groupScores) {
+    html += '<tr><td style="font-weight:700;color:#1a56db;">' + g.code + '</td><td>' + escapeHtml(g.name) + '</td><td>' + g.ref + ' 分</td><td class="tag-cell">' + g.sr + '</td></tr>';
+  }
+  html += '</tbody></table>';
+
+  // 就业信息
+  if (detail && detail.e) {
+    html += '<h3>💼 就业情况</h3>';
+    html += '<div class="employ-stats">';
+    html += '<div class="employ-stat"><div class="val">' + detail.e.rt + '%</div><div class="lbl">应届就业率</div></div>';
+    html += '<div class="employ-stat"><div class="val">¥' + detail.e.sl + '</div><div class="lbl">应届月薪范围</div></div>';
+    html += '</div>';
+    html += '<p style="font-size:13px;color:#6b7280;margin-top:8px;">🏢 主要就业单位：</p>';
+    html += '<div class="employ-tags">';
+    for (const emp of detail.e.em) {
+      html += '<span class="employ-tag">' + escapeHtml(emp) + '</span>';
+    }
+    html += '</div>';
+  }
+
+  html += '</div>'; // modal-body
+
+  document.getElementById('modalPanel').innerHTML = html;
+  document.getElementById('modalOverlay').style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal() {
+  document.getElementById('modalOverlay').style.display = 'none';
+  document.body.style.overflow = '';
+}
+
+// ESC 关闭弹窗
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closeModal();
+});
+
+function resetAll() {
+  state = {
+    province: null,
+    score: null,
+    preferredSubject: null,
+    additionalSubjects: [],
+    allResults: [],
+    filter: 'all',
+    sort: 'score_desc',
+    searchQuery: '',
+  };
+  document.getElementById('provinceSelect').value = '';
+  document.getElementById('scoreInput').value = '';
+  hideSubjectInputs();
+  document.getElementById('tierInfo').classList.remove('show');
+  document.getElementById('introState').style.display = '';
+  document.getElementById('resultsContent').style.display = 'none';
+  document.getElementById('resultsGrid').innerHTML = '';
+  updateSearchButton();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ==================== 键盘快捷键 ====================
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && !e.target.closest('.search-input')) {
+    const btn = document.getElementById('searchBtn');
+    if (!btn.disabled) {
+      e.preventDefault();
+      performSearch();
+    }
+  }
+});
+</script>
+<!-- ==================== 详情弹窗 ==================== -->
+<div class="modal-overlay" id="modalOverlay" style="display:none;" onclick="if(event.target===this)closeModal()">
+  <div class="modal-panel" id="modalPanel"></div>
+</div>
+</body>
+</html>
