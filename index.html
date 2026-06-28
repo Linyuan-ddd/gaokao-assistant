@@ -2129,7 +2129,7 @@ function renderResults() {
   });
   document.getElementById('searchInput').addEventListener('input', (e) => {
     state.searchQuery = e.target.value;
-    renderResults();
+    updateGridOnly(); // 只更新结果列表，不重建工具栏
   });
   document.getElementById('sortSelect').addEventListener('change', (e) => {
     state.sort = e.target.value;
@@ -2197,6 +2197,20 @@ function getFilteredResults() {
   }
 
   return results;
+}
+
+// 仅更新结果网格，不重建工具栏（用于搜索输入）
+function updateGridOnly() {
+  const filtered = getFilteredResults();
+  const grid = document.getElementById('resultsGrid');
+  const empty = document.getElementById('emptyState');
+  if (filtered.length === 0) {
+    grid.innerHTML = '';
+    empty.style.display = '';
+  } else {
+    empty.style.display = 'none';
+    grid.innerHTML = filtered.map(r => createCard(r)).join('');
+  }
 }
 
 function createCard(result) {
