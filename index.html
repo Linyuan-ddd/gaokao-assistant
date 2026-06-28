@@ -2103,11 +2103,9 @@ function performSearch() {
 
   // 遍历所有高校
   for (const uni of UNIVERSITIES) {
-    // 省份智能过滤：全国性高校（有真实排名数据）所有省份都显示
-    // 地方性高校（无真实排名）仅在所属省份显示
-    const isNational = uni.groups.some(g => g.rank2025);
-    const uniProvince = getProvince(uni.city);
-    if (!isNational && uniProvince !== p.name) continue;
+    // 福建模式：仅显示在福建有真实招生数据的学校
+    const hasFjData = uni.groups.some(g => g.rank2025);
+    if (p.name === '福建' && !hasFjData) continue;
 
     uni.groups.forEach((group, gi) => {
       // 检查选科要求
