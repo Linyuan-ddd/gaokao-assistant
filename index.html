@@ -1962,12 +1962,16 @@ function scoreToRank(score) {
   if (!tiers || !tiers.tekongRank) return null;
   if (score >= 750) return 1;
   if (score <= tiers.benke) {
-    return Math.round(tiers.benkeRank + (tiers.benke - score) / 50 * tiers.benkeRank * 0.002);
+    // 低于本科线：线性外推
+    const below = tiers.benke - score;
+    return Math.round(tiers.benkeRank + below / (tiers.benke * 0.2) * tiers.benkeRank * 0.05);
   }
   if (score >= tiers.tekong) {
+    // 高于特控线：幂函数拟合（指数3比2更接近真实分布）
     const ratio = (750 - score) / (750 - tiers.tekong);
-    return Math.round(tiers.tekongRank * ratio * ratio);
+    return Math.round(tiers.tekongRank * Math.pow(ratio, 3));
   }
+  // 特控线~本科线之间：线性
   const ratio2 = (tiers.tekong - score) / (tiers.tekong - tiers.benke);
   return Math.round(tiers.tekongRank + (tiers.benkeRank - tiers.tekongRank) * ratio2);
 }
