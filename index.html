@@ -2359,23 +2359,25 @@ function showDetail(uniId) {
   // 在你的选科下可报专业组
   if (matchedGroups.length > 0) {
     html += '<h3>📊 你当前选科可报的专业组 (' + escapeHtml(p ? p.name : '') + ' · 参考2025年)</h3>';
-    html += '<table class="detail-table"><thead><tr><th>编号</th><th>专业组</th><th>2025参考分</th><th>选科要求</th><th>分类</th></tr></thead><tbody>';
+    html += '<table class="detail-table"><thead><tr><th>编号</th><th>专业组</th><th>2025参考分</th><th>参考位次</th><th>选科要求</th><th>分类</th></tr></thead><tbody>';
     for (const g of matchedGroups) {
       let catBadge = '';
       if (g.cat === 'chong') catBadge = '<span style="background:#fce8e6;color:#d93025;padding:2px 8px;border-radius:10px;font-weight:600;">🔴 冲刺</span>';
       else if (g.cat === 'wen') catBadge = '<span style="background:#fef7e0;color:#e37400;padding:2px 8px;border-radius:10px;font-weight:600;">🟡 稳妥</span>';
       else if (g.cat === 'bao') catBadge = '<span style="background:#e6f4ea;color:#188038;padding:2px 8px;border-radius:10px;font-weight:600;">🟢 保底</span>';
       else catBadge = '<span style="color:#9ca3af;">—</span>';
-      html += '<tr><td style="font-weight:700;color:#1a56db;">' + g.code + '</td><td><strong>' + escapeHtml(g.name) + '</strong></td><td>' + g.ref + ' 分</td><td class="tag-cell">' + g.sr + '</td><td>' + catBadge + '</td></tr>';
+      const gr = scoreToRank(g.ref);
+      html += '<tr><td style="font-weight:700;color:#1a56db;">' + g.code + '</td><td><strong>' + escapeHtml(g.name) + '</strong></td><td>' + g.ref + ' 分</td><td style="color:#92400e;font-weight:600;">' + (gr ? '约' + gr + '名' : '--') + '</td><td class="tag-cell">' + g.sr + '</td><td>' + catBadge + '</td></tr>';
     }
     html += '</tbody></table>';
   }
 
   // 该大学全部专业组
   html += '<h3>📋 ' + escapeHtml(uni.name) + '全部专业组 (' + escapeHtml(p ? p.name : '') + ' · 参考2025年)</h3>';
-  html += '<table class="detail-table"><thead><tr><th>编号</th><th>专业组</th><th>2025参考分</th><th>选科要求</th></tr></thead><tbody>';
+  html += '<table class="detail-table"><thead><tr><th>编号</th><th>专业组</th><th>2025参考分</th><th>参考位次</th><th>选科要求</th></tr></thead><tbody>';
   for (const g of groupScores) {
-    html += '<tr><td style="font-weight:700;color:#1a56db;">' + g.code + '</td><td>' + escapeHtml(g.name) + '</td><td>' + g.ref + ' 分</td><td class="tag-cell">' + g.sr + '</td></tr>';
+    const gr = scoreToRank(g.ref);
+    html += '<tr><td style="font-weight:700;color:#1a56db;">' + g.code + '</td><td>' + escapeHtml(g.name) + '</td><td>' + g.ref + ' 分</td><td style="color:#92400e;font-weight:600;">' + (gr ? '约' + gr + '名' : '--') + '</td><td class="tag-cell">' + g.sr + '</td></tr>';
   }
   html += '</tbody></table>';
 
