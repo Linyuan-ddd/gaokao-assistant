@@ -268,13 +268,8 @@ body {
         </select>
       </div>
       <div class="input-group">
-        <label>📝 高考总分</label>
-        <input type="number" id="scoreInput" placeholder="输入分数" min="0" max="750" step="1">
-      </div>
-      <div class="input-group">
         <label>🏅 全省排名（位次）</label>
-        <input type="number" id="rankInput" placeholder="输入排名，自动换算分数" min="1" max="999999" step="1">
-        <small style="color:#6b7280;font-size:11px;" id="rankHint"></small>
+        <input type="number" id="rankInput" placeholder="输入你的全省排名" min="1" max="999999" step="1">
       </div>
       <div class="input-group" id="preferredSubjectGroup" style="display:none;">
         <label>🎯 首选科目</label>
@@ -1691,14 +1686,14 @@ function getProvince(city) { return CITY_PROVINCE[city] || city; }
 // ==================== 全局状态 ====================
 let state = {
   province: null,
-  score: null,
+  rank: null,                // 用户全省排名
   preferredSubject: null,   // '物理' | '历史' | null
   additionalSubjects: [],   // ['化学', '生物', ...] (3+1+2)  or all 3 subjects (3+3)
   allResults: [],           // 全部匹配结果
   filter: 'all',            // 'all' | 'chong' | 'wen' | 'bao'
   regionFilter: 'all',      // 'all' | '华北' | '东北' | '华东' | '华中' | '华南' | '西南' | '西北'
   provinceFilter: 'all',    // 'all' | '四川' | '广东' ...
-  sort: 'score_desc',       // 'score_desc' | 'score_asc' | 'name'
+  sort: 'rank_asc',         // 'rank_asc' | 'rank_desc' | 'name'
   searchQuery: '',
 };
 
@@ -1730,8 +1725,7 @@ function initProvinceSelect() {
 
 function bindEvents() {
   document.getElementById('provinceSelect').addEventListener('change', onProvinceChange);
-  document.getElementById('scoreInput').addEventListener('input', onScoreInput);
-  document.getElementById('rankInput').addEventListener('input', syncScoreFromRank);
+  document.getElementById('rankInput').addEventListener('input', onRankInput);
   document.getElementById('searchBtn').addEventListener('click', performSearch);
   document.getElementById('resetBtn').addEventListener('click', resetAll);
 
@@ -1812,30 +1806,31 @@ function showTierInfo() {
   const info = document.getElementById('tierInfo');
   const p = state.province;
   if (p.type === '3+1+2') {
+    const phy = p.tiers.physics, his = p.tiers.history;
     info.innerHTML = `
-      📊 <strong>${p.name}</strong> · 「3+1+2」模式 ·
-      物理类：本科线 <strong>${p.tiers.physics.benke}</strong> 分 | 特控线 <strong>${p.tiers.physics.tekong}</strong> 分 ·
-      历史类：本科线 <strong>${p.tiers.history.benke}</strong> 分 | 特控线 <strong>${p.tiers.history.tekong}</strong> 分
-      <br><small style="color:#5f6368;">特控线 ≈ 原一本线，本科线 ≈ 原二本线 | 数据来源：2025年各省教育考试院公开信息</small>
+      📊 <strong>${p.name}</strong> · 「3+1+2」模式<br>
+      物理类：特控线 <strong>${phy.tekong}</strong> 分（约${phy.tekongRank ? phy.tekongRank.toLocaleString() : '--'}名）| 本科线 <strong>${phy.benke}</strong> 分（约${phy.benkeRank ? phy.benkeRank.toLocaleString() : '--'}名）<br>
+      历史类：特控线 <strong>${his.tekong}</strong> 分（约${his.tekongRank ? his.tekongRank.toLocaleString() : '--'}名）| 本科线 <strong>${his.benke}</strong> 分（约${his.benkeRank ? his.benkeRank.toLocaleString() : '--'}名）
+      <br><small style="color:#5f6368;">数据来源：2025年各省教育考试院官方公布 | 位次为大致参考</small>
     `;
   } else if (p.type === '3+3') {
+    const u = p.tiers.unified;
     info.innerHTML = `
       📊 <strong>${p.name}</strong> · 「3+3」模式 ·
-      本科线 <strong>${p.tiers.unified.benke}</strong> 分 | 特控线 <strong>${p.tiers.unified.tekong}</strong> 分
-      <br><small style="color:#5f6368;">特控线 ≈ 原一本线，本科线 ≈ 原二本线 | 数据来源：2025年各省教育考试院公开信息</small>
+      特控线 <strong>${u.tekong}</strong> 分（约${u.tekongRank ? u.tekongRank.toLocaleString() : '--'}名）| 本科线 <strong>${u.benke}</strong> 分（约${u.benkeRank ? u.benkeRank.toLocaleString() : '--'}名）
+      <br><small style="color:#5f6368;">数据来源：2025年各省教育考试院官方公布 | 位次为大致参考</small>
     `;
   }
   info.classList.add('show');
 }
 
-function onScoreInput() {
-  const val = parseInt(document.getElementById('scoreInput').value);
-  state.score = isNaN(val) ? null : val;
-  if (state.score && state.province) syncRankFromScore();
+function onRankInput() {
+  const val = parseInt(document.getElementById('rankInput').value);
+  state.rank = isNaN(val) || val < 1 ? null : val;
   updateSearchButton();
 }
 
-// ==================== 位次↔分数 转换 ====================
+// ==================== 分数→位次 转换（仅用于显示参考） ====================
 function getTierRanks() {
   if (!state.province) return null;
   const p = state.province;
@@ -1843,27 +1838,9 @@ function getTierRanks() {
     const pref = state.preferredSubject || document.querySelector('input[name="preferred"]:checked');
     if (pref && pref.value) return p.tiers[pref.value === '物理' ? 'physics' : 'history'];
     if (pref) return p.tiers[pref === '物理' ? 'physics' : 'history'];
-    return p.tiers.physics; // 默认物理
+    return p.tiers.physics;
   }
   return p.tiers.unified;
-}
-
-function rankToScore(rank) {
-  const tiers = getTierRanks();
-  if (!tiers || !tiers.tekongRank) return null;
-  if (rank <= 1) return 750;
-  if (rank >= tiers.benkeRank) {
-    // 低于本科线：线性外推
-    return Math.max(200, tiers.benke - (rank - tiers.benkeRank) / (tiers.benkeRank * 0.002) * 50);
-  }
-  if (rank <= tiers.tekongRank) {
-    // 高于特控线：用 sqrt 模拟非均匀分布
-    const ratio = rank / tiers.tekongRank;
-    return Math.round(750 - (750 - tiers.tekong) * Math.sqrt(ratio));
-  }
-  // 特控线~本科线之间：线性
-  const ratio2 = (rank - tiers.tekongRank) / (tiers.benkeRank - tiers.tekongRank);
-  return Math.round(tiers.tekong - (tiers.tekong - tiers.benke) * ratio2);
 }
 
 function scoreToRank(score) {
@@ -1879,27 +1856,6 @@ function scoreToRank(score) {
   }
   const ratio2 = (tiers.tekong - score) / (tiers.tekong - tiers.benke);
   return Math.round(tiers.tekongRank + (tiers.benkeRank - tiers.tekongRank) * ratio2);
-}
-
-function syncRankFromScore() {
-  const rank = scoreToRank(state.score);
-  if (rank) {
-    document.getElementById('rankInput').value = rank;
-    document.getElementById('rankHint').textContent = '≈ 估算排名（仅供参考）';
-  }
-}
-
-function syncScoreFromRank() {
-  const rankVal = parseInt(document.getElementById('rankInput').value);
-  if (isNaN(rankVal) || rankVal < 1) return;
-  state.rank = rankVal;
-  const score = rankToScore(rankVal);
-  if (score) {
-    document.getElementById('scoreInput').value = score;
-    state.score = score;
-    document.getElementById('rankHint').textContent = '→ 估算分数约 ' + score + ' 分（仅供参考）';
-  }
-  updateSearchButton();
 }
 
 function collectSubjects() {
@@ -1923,8 +1879,8 @@ function collectSubjects() {
 function updateSearchButton() {
   const btn = document.getElementById('searchBtn');
   const p = state.province;
-  const score = state.score;
-  if (!p || score === null || score < 0 || score > 750) {
+  const rank = state.rank;
+  if (!p || rank === null || rank < 1) {
     btn.disabled = true;
     return;
   }
@@ -1984,10 +1940,19 @@ function groupMatchesSubjectRequirements(group, preferredSubject, additionalSubj
 
 function getCategory(userScore, referenceScore) {
   const diff = userScore - referenceScore;
-  if (diff >= 10) return 'bao';      // 高出10分以上 = 保底
-  if (diff >= -3) return 'wen';      // 差3分以内到高出10分 = 稳妥
-  if (diff >= -20) return 'chong';   // 差20分到差3分 = 冲刺
-  return null;                        // 差太多，不显示
+  if (diff >= 10) return 'bao';
+  if (diff >= -3) return 'wen';
+  if (diff >= -20) return 'chong';
+  return null;
+}
+
+// 基于排名判断冲稳保（排名越小越好）
+function getCategoryByRank(userRank, refRank) {
+  const ratio = userRank / refRank;
+  if (ratio <= 0.75) return 'bao';     // 用户排名远好于参考（前75%以内）
+  if (ratio <= 1.15) return 'wen';     // 接近或略好
+  if (ratio <= 1.8) return 'chong';    // 有一定差距但仍可冲刺
+  return null;
 }
 
 function getCategoryLabel(cat) {
@@ -1999,10 +1964,10 @@ function getCategoryLabel(cat) {
 
 function performSearch() {
   const p = state.province;
-  const score = state.score;
+  const rank = state.rank;
   const { preferred, additional } = collectSubjects();
 
-  if (!p || score === null) return;
+  if (!p || rank === null) return;
 
   // 获取批次线
   const tierLine = getTierLine(p, preferred);
@@ -2026,26 +1991,26 @@ function performSearch() {
         return;
       }
 
-      // 计算参考分数：特控线 + 偏移
+      // 计算参考分数 → 参考排名
       const referenceScore = Math.round(tekong + group.offset);
+      const referenceRank = scoreToRank(referenceScore);
+      if (!referenceRank) return;
 
-      // 判断冲稳保
-      const category = getCategory(score, referenceScore);
-      if (!category) return; // 分数差距太大
+      // 基于排名判断冲稳保（百分比阈值）
+      const category = getCategoryByRank(rank, referenceRank);
+      if (!category) return;
 
-      // 专科院校仅对本科线以下或刚过线的考生显示
-      if (uni.tier === '专科' && score >= benke + 15) return;
-
-      // 计算差值
-      const diff = score - referenceScore;
+      // 专科院校仅对本科线以下的考生显示
+      const benkeRank = tierLine.benkeRank || 999999;
+      if (uni.tier === '专科' && rank <= benkeRank * 0.8) return;
 
       state.allResults.push({
         university: uni,
         group: group,
         groupCode: String(gi + 1).padStart(2, '0'),
         referenceScore: referenceScore,
+        referenceRank: referenceRank,
         category: category,
-        diff: diff,
         tekong: tekong,
         benke: benke,
         region: getRegion(uni.city),
@@ -2054,8 +2019,8 @@ function performSearch() {
     });
   }
 
-  // 排序：按参考分数降序
-  state.allResults.sort((a, b) => b.referenceScore - a.referenceScore);
+  // 排序：按参考排名升序（排名越小越好）
+  state.allResults.sort((a, b) => a.referenceRank - b.referenceRank);
 
   // 显示结果
   document.getElementById('introState').style.display = 'none';
@@ -2070,16 +2035,16 @@ function renderResults() {
   const empty = document.getElementById('emptyState');
   const warnDiv = document.getElementById('scoreWarning');
 
-  // 检查是否需要显示低分警告
-  if (state.allResults.length > 0) {
-    const benke = state.allResults[0].benke;
-    const diffFromBenke = state.score - benke;
-    if (diffFromBenke < 0) {
+  // 检查是否需要显示排名警告
+  if (state.allResults.length > 0 && state.rank) {
+    const tierLine = getTierLine(state.province, state.preferredSubject);
+    const benkeRank = tierLine.benkeRank || 999999;
+    if (state.rank > benkeRank) {
       warnDiv.style.display = '';
-      warnDiv.innerHTML = '⚠️ <strong>注意：你的分数（' + state.score + '分）低于本科线（' + benke + '分）' + Math.abs(diffFromBenke) + '分。</strong><br>本科院校录取机会较小，以下结果中的"冲刺"院校可尝试填报，"保底"院校可作为重点考虑对象。<br>建议同时关注<strong>专科批次</strong>和<strong>征集志愿</strong>信息，具体以省教育考试院官方发布为准。';
-    } else if (diffFromBenke >= 0 && diffFromBenke <= 15) {
+      warnDiv.innerHTML = '⚠️ <strong>注意：你的排名（' + state.rank.toLocaleString() + '名）在本科线（约' + benkeRank.toLocaleString() + '名）之后。</strong><br>本科录取机会较小，"冲刺"院校可尝试填报，"保底"院校作为重点。<br>建议同时关注<strong>专科批次</strong>和<strong>征集志愿</strong>。';
+    } else if (state.rank > benkeRank * 0.85) {
       warnDiv.style.display = '';
-      warnDiv.innerHTML = '💡 <strong>提示：你的分数（' + state.score + '分）紧贴本科线（' + benke + '分），仅高出' + diffFromBenke + '分。</strong><br>建议"冲稳保"志愿梯度合理分布，多关注往年录取分接近本科线的院校，并适当填报保底学校。';
+      warnDiv.innerHTML = '💡 <strong>提示：你的排名（' + state.rank.toLocaleString() + '名）接近本科线（约' + benkeRank.toLocaleString() + '名）。</strong><br>建议合理分布志愿梯度，多填报保底学校。';
     } else {
       warnDiv.style.display = 'none';
     }
@@ -2112,10 +2077,9 @@ function renderResults() {
         ${PROVINCES_FILTER.map(r => '<option value="' + r + '" ' + (state.provinceFilter === r ? 'selected' : '') + '>' + r + '</option>').join('')}
       </select>
       <select class="sort-select" id="sortSelect">
-        <option value="score_desc" ${state.sort === 'score_desc' ? 'selected' : ''}>📊 参考分 ↓</option>
-        <option value="score_asc" ${state.sort === 'score_asc' ? 'selected' : ''}>📊 参考分 ↑</option>
+        <option value="rank_asc" ${state.sort === 'rank_asc' ? 'selected' : ''}>🏅 排名 ↑（好学校在前）</option>
+        <option value="rank_desc" ${state.sort === 'rank_desc' ? 'selected' : ''}>🏅 排名 ↓</option>
         <option value="name" ${state.sort === 'name' ? 'selected' : ''}>🔤 学校名称</option>
-        <option value="diff" ${state.sort === 'diff' ? 'selected' : ''}>📈 分差（你高一保底多）</option>
       </select>
     </div>
   `;
@@ -2186,14 +2150,12 @@ function getFilteredResults() {
   }
 
   // 排序
-  if (state.sort === 'score_desc') {
-    results.sort((a, b) => b.referenceScore - a.referenceScore);
-  } else if (state.sort === 'score_asc') {
-    results.sort((a, b) => a.referenceScore - b.referenceScore);
+  if (state.sort === 'rank_asc') {
+    results.sort((a, b) => a.referenceRank - b.referenceRank);
+  } else if (state.sort === 'rank_desc') {
+    results.sort((a, b) => b.referenceRank - a.referenceRank);
   } else if (state.sort === 'name') {
     results.sort((a, b) => a.university.name.localeCompare(b.university.name, 'zh'));
-  } else if (state.sort === 'diff') {
-    results.sort((a, b) => b.diff - a.diff);
   }
 
   return results;
@@ -2245,11 +2207,14 @@ function createCard(result) {
     subjectReq += ' + ' + group.additional.join('、');
   }
 
-  // 分差文字
+  // 排名差距文字
   let diffText = '';
-  if (result.diff > 0) diffText = `+${result.diff} 分`;
-  else if (result.diff === 0) diffText = '持平';
-  else diffText = `${result.diff} 分`;
+  if (result.referenceRank && state.rank) {
+    const rankDiff = state.rank - result.referenceRank;
+    if (rankDiff < 0) diffText = '排名高' + Math.abs(rankDiff).toLocaleString() + '位';
+    else if (rankDiff === 0) diffText = '排名持平';
+    else diffText = '排名低' + rankDiff.toLocaleString() + '位';
+  }
 
   // 查详情
   const detail = UNI_DETAILS[uni.id] || {};
@@ -2267,14 +2232,14 @@ function createCard(result) {
       <div class="card-group-name"><span style="display:inline-block;background:#e8f0fe;color:#1a56db;padding:1px 8px;border-radius:4px;font-weight:700;font-size:12px;margin-right:6px;">${result.groupCode}</span> ${escapeHtml(group.name)}</div>
       <div class="card-info">
         <span class="card-tag">📍 ${escapeHtml(uni.city)}</span>
-        <span class="card-tag score">📊 2025参考：${result.referenceScore} 分</span>
-        ${state.rank || state.score ? '<span class="card-tag" style="background:#fef3c7;color:#92400e;">🏅 约' + (scoreToRank(result.referenceScore) || '--') + '名</span>' : ''}
+        <span class="card-tag score">🏅 参考位次：约${result.referenceRank.toLocaleString()} 名</span>
+        <span class="card-tag" style="background:#fef3c7;color:#92400e;">📊 约${result.referenceScore} 分</span>
         <span class="card-tag subjects">📋 ${subjectReq}</span>
         ${detail.f ? '<span class="card-tag fee">💰 ' + detail.f + '元/年</span>' : ''}
       </div>
       <div class="card-footer">
         <span class="card-category ${cat}">${getCategoryLabel(cat)}</span>
-        <span class="card-diff">与你分数的差值：<strong>${diffText}</strong> <span style="color:#1a73e8;font-size:11px;">▶ 详情</span></span>
+        <span class="card-diff">排名差距：<strong>${diffText}</strong> <span style="color:#1a73e8;font-size:11px;">▶ 详情</span></span>
       </div>
     </div>
   `;
@@ -2308,12 +2273,10 @@ function showDetail(uniId) {
   const groupScores = uni.groups
     .map((g, i) => {
       const ref = Math.round(tierLine.tekong + g.offset);
-      const diff = state.score ? state.score - ref : null;
+      const refRank = scoreToRank(ref);
       let cat = null;
-      if (diff !== null) {
-        if (diff >= 10) cat = 'bao';
-        else if (diff >= -3) cat = 'wen';
-        else if (diff >= -20) cat = 'chong';
+      if (state.rank && refRank) {
+        cat = getCategoryByRank(state.rank, refRank);
       }
       // 选科要求文字
       let sr = g.preferred === '物理' ? '必选物理' : g.preferred === '历史' ? '必选历史' : '不限首选';
@@ -2373,7 +2336,7 @@ function showDetail(uniId) {
   // 在你的选科下可报专业组
   if (matchedGroups.length > 0) {
     html += '<h3>📊 你当前选科可报的专业组 (' + escapeHtml(p ? p.name : '') + ' · 参考2025年)</h3>';
-    html += '<table class="detail-table"><thead><tr><th>编号</th><th>专业组</th><th>2025参考分</th><th>参考位次</th><th>选科要求</th><th>分类</th></tr></thead><tbody>';
+    html += '<table class="detail-table"><thead><tr><th>编号</th><th>专业组</th><th>参考位次</th><th>约合分数</th><th>选科要求</th><th>分类</th></tr></thead><tbody>';
     for (const g of matchedGroups) {
       let catBadge = '';
       if (g.cat === 'chong') catBadge = '<span style="background:#fce8e6;color:#d93025;padding:2px 8px;border-radius:10px;font-weight:600;">🔴 冲刺</span>';
@@ -2381,17 +2344,17 @@ function showDetail(uniId) {
       else if (g.cat === 'bao') catBadge = '<span style="background:#e6f4ea;color:#188038;padding:2px 8px;border-radius:10px;font-weight:600;">🟢 保底</span>';
       else catBadge = '<span style="color:#9ca3af;">—</span>';
       const gr = scoreToRank(g.ref);
-      html += '<tr><td style="font-weight:700;color:#1a56db;">' + g.code + '</td><td><strong>' + escapeHtml(g.name) + '</strong></td><td>' + g.ref + ' 分</td><td style="color:#92400e;font-weight:600;">' + (gr ? '约' + gr + '名' : '--') + '</td><td class="tag-cell">' + g.sr + '</td><td>' + catBadge + '</td></tr>';
+      html += '<tr><td style="font-weight:700;color:#1a56db;">' + g.code + '</td><td><strong>' + escapeHtml(g.name) + '</strong></td><td style="color:#92400e;font-weight:600;">' + (gr ? '约' + gr.toLocaleString() + '名' : '--') + '</td><td>' + g.ref + ' 分</td><td class="tag-cell">' + g.sr + '</td><td>' + catBadge + '</td></tr>';
     }
     html += '</tbody></table>';
   }
 
   // 该大学全部专业组
   html += '<h3>📋 ' + escapeHtml(uni.name) + '全部专业组 (' + escapeHtml(p ? p.name : '') + ' · 参考2025年)</h3>';
-  html += '<table class="detail-table"><thead><tr><th>编号</th><th>专业组</th><th>2025参考分</th><th>参考位次</th><th>选科要求</th></tr></thead><tbody>';
+  html += '<table class="detail-table"><thead><tr><th>编号</th><th>专业组</th><th>参考位次</th><th>约合分数</th><th>选科要求</th></tr></thead><tbody>';
   for (const g of groupScores) {
     const gr = scoreToRank(g.ref);
-    html += '<tr><td style="font-weight:700;color:#1a56db;">' + g.code + '</td><td>' + escapeHtml(g.name) + '</td><td>' + g.ref + ' 分</td><td style="color:#92400e;font-weight:600;">' + (gr ? '约' + gr + '名' : '--') + '</td><td class="tag-cell">' + g.sr + '</td></tr>';
+    html += '<tr><td style="font-weight:700;color:#1a56db;">' + g.code + '</td><td>' + escapeHtml(g.name) + '</td><td style="color:#92400e;font-weight:600;">' + (gr ? '约' + gr.toLocaleString() + '名' : '--') + '</td><td>' + g.ref + ' 分</td><td class="tag-cell">' + g.sr + '</td></tr>';
   }
   html += '</tbody></table>';
 
@@ -2430,7 +2393,7 @@ document.addEventListener('keydown', (e) => {
 function resetAll() {
   state = {
     province: null,
-    score: null,
+    rank: null,
     preferredSubject: null,
     additionalSubjects: [],
     allResults: [],
@@ -2441,7 +2404,7 @@ function resetAll() {
     searchQuery: '',
   };
   document.getElementById('provinceSelect').value = '';
-  document.getElementById('scoreInput').value = '';
+  document.getElementById('rankInput').value = '';
   hideSubjectInputs();
   document.getElementById('tierInfo').classList.remove('show');
   document.getElementById('introState').style.display = '';
